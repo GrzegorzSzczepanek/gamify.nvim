@@ -1,6 +1,9 @@
 local M = {}
 local logic = require 'gamify.logic'
 
+-- TODO add popups showing that user got exp for something
+-- TODO mineraft-like popups with achievements
+
 function M.show_status_window()
   local buffer = vim.api.nvim_create_buf(false, true)
 

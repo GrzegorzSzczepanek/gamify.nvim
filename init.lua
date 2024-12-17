@@ -21,6 +21,7 @@ local function ensure_data_file()
         goals = {},
         date = {},
         lines_written = 0,
+        total_time = 0,
       })
       file:close()
     end

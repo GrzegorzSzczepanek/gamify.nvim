@@ -17,7 +17,7 @@ local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
 function M.load_data()
   local file = io.open(data_file, 'r')
   if not file then
-    return { xp = 0, achievements = {}, goals = {}, date = {}, lines_written = 0, last_time_entry = nil } -- Default data
+    return { xp = 0, achievements = {}, goals = {}, date = {}, lines_written = 0, last_time_entry = nil, total_time = 0, lvl = 0 } -- Default data
   end
   local content = file:read '*a'
   file:close()
