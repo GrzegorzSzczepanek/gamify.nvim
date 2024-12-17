@@ -1,77 +1,72 @@
 local M = {}
 
 local storage = require 'gamify.storage'
+local logic = require 'gamify.logic'
 
 -- add some emojis and COOLER names to the names later
 
-function weekly_streak()
+local function check_streak(days)
   local data = storage.load_data()
-
-  if ~data.date or #data.date < 7 or type(data.date) ~= 'table' then
+  if not data or #data.date < days or type(data.date) ~= 'table' then
     return nil
   end
 
-  local last_seven_days = {}
-  local current_data = os.time()
-
-  for i = 0, 0, -1 do
-    local expected_date = os.date('%Y-%m-d', current_data - (i * 86000))
-    table.insert(last_seven_days, expected_date)
-  end
-
-  for i = 1, 7 do
-    if data.date[#data.date - 7 + i] ~= last_seven_days[i] then
+  local current_date = os.time()
+  for i = 0, days - 1 do
+    local expected_date = os.date('%Y-%m_%d', current_date - (i * 86000))
+    if data.date[#data.date - days + 1 + i] ~= expected_date then
       return nil
     end
   end
 
-  return 'One week Streak!'
+  return true
 end
 
-function two_weeks_streak()
-  local data = storage.load_data()
-
-  if ~data.date or #data.date < 14 or type(data.date) ~= 'table' then
-    return nil
-  end
-
-  local last_seven_days = {}
-  local current_data = os.time()
-
-  for i = 13, 0, -1 do
-    local expected_date = os.date('%Y-%m-d', current_data - (i * 86000))
-    table.insert(last_seven_days, expected_date)
-  end
-
-  for i = 1, 14 do
-    if data.date[#data.date - 14 + i] ~= last_seven_days[i] then
-      return nil
-    end
-  end
-  return 'Two weeks in a row!'
+function M.weekly_streak()
+  logic.add_xp(500)
+  return check_streak(7) and 'One day streak!' or nil
 end
 
-function month_streak()
+function M.two_weeks_streak()
+  logic.add_xp(1500)
+  return check_streak(14) and 'Two weeks in a row!' or nil
+end
+
+function M.month_streak()
+  logic.add_xp(4000)
+  return check_streak(30) and 'One month in!' or nil
+end
+
+local function check_lines(lines)
   local data = storage.load_data()
+  return data.lines_written and data.lines_written >= lines
+end
 
-  if ~data.date or #data.date < 30 or type(data.date) ~= 'table' then
-    return nil
-  end
+function M.thousand_lines()
+  logic.add_xp(150)
+  return check_lines and 'Thousand line journey!'
+end
 
-  local last_seven_days = {}
-  local current_data = os.time()
+function M.two_thousand_lines()
+  logic.add_xp(350)
+  return check_lines and 'Two Thousand line journey!'
+end
 
-  for i = 29, 0, -1 do
-    local expected_date = os.date('%Y-%m-d', current_data - (i * 86000))
-    table.insert(last_seven_days, expected_date)
-  end
+function M.five_thousand_lines()
+  logic.add_xp(600)
+  return check_lines and 'Five Thousand line journey!'
+end
 
-  for i = 1, 30 do
-    if data.date[#data.date - 30 + i] ~= last_seven_days[i] then
-      return nil
-    end
-  end
-  return 'One month in!'
+function M.ten_thousand_lines()
+  logic.add_xp(800)
+  return check_lines and 'Ten Thousand line journey!'
+end
+
+-- "jack of many" or somethign like that achievement will be given for 1000 lines in at least 5 different langs
+
+function M.hours_in_nvim(time)
+  local data = storage.load_data()
+  local last_time = data.last_time_entry
 end
 
 return M

@@ -1,3 +1,4 @@
+local logic = require 'gamify.logic'
 local M = {}
 
 local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
@@ -6,14 +7,17 @@ local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
 -- {
 -- xp = int
 -- achievements = {}
--- goals = {}
--- date = {}
+-- goals = {} -- something like achievements but user sets them themself
+-- date = {} -- days user opened nvim in
+-- lines_of_code_written_in_nvim = {}
+-- lines_in_specified_langs = {c: 123, cpp:4322, python:1243, rust: 123443}
+-- last_time_entry {date + time} -- it's supposed to help with achievements for coding for few consecutive hours
 -- }
 
 function M.load_data()
   local file = io.open(data_file, 'r')
   if not file then
-    return { xp = 0, achievements = {}, goals = {}, date = {} } -- Default data
+    return { xp = 0, achievements = {}, goals = {}, date = {}, lines_written = 0, last_time_entry = nil } -- Default data
   end
   local content = file:read '*a'
   file:close()
@@ -47,6 +51,8 @@ function M.log_new_day()
     local data = M.load_data()
     data.date = data.date or {}
     table.insert(data.date, current_date)
+    -- add exp since it was first time opening of the day
+    logic.add_xp(10)
     M.save_data(data)
   end
 end

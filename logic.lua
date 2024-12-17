@@ -21,11 +21,10 @@ function M.set_goal(description, deadline)
   storage.save_data(user_data)
 end
 
-function M.daily_nvim_launch()
-  return 0
+function M.set_time_entry()
+  local data = storage.load_data()
+  data.last_time_entry = os.date '%Y-%m-%d %H:%M:%S'
 end
-
-function M.calculate_daily_streak() end
 
 function M.get_data()
   return user_data
