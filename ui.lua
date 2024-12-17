@@ -12,7 +12,6 @@ function M.show_status_window()
     'Achievements:',
   }
 
-  -- Add achievements to the display
   if #data.achievements > 0 then
     for _, achievement in ipairs(data.achievements) do
       table.insert(lines, '- ' .. achievement)
@@ -21,7 +20,6 @@ function M.show_status_window()
     table.insert(lines, 'None yet.')
   end
 
-  -- Add goals to the display
   table.insert(lines, '')
   table.insert(lines, 'Goals:')
   if #data.goals > 0 then
@@ -33,7 +31,7 @@ function M.show_status_window()
   end
 
   table.insert(lines, '')
-  table.insert(lines, 'Press any key to close.')
+  table.insert(lines, 'Press esc key to close.')
 
   local opts = {
     style = 'minimal',

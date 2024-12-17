@@ -21,6 +21,12 @@ function M.set_goal(description, deadline)
   storage.save_data(user_data)
 end
 
+function M.daily_nvim_launch()
+  return 0
+end
+
+function M.calculate_daily_streak() end
+
 function M.get_data()
   return user_data
 end
