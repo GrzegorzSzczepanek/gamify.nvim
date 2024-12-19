@@ -22,6 +22,7 @@ local function ensure_data_file()
         date = {},
         lines_written = 0,
         total_time = 0,
+        lvl = 0,
       })
       file:close()
     end
@@ -30,6 +31,10 @@ end
 
 function M.init()
   ensure_data_file()
+
+  if storage.log_new_day() then
+    logic.add_xp(10)
+  end
 
   vim.api.nvim_create_user_command('Gamify', function()
     ui.show_status_window()

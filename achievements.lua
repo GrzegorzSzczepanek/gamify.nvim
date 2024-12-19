@@ -2,6 +2,7 @@ local M = {}
 
 local storage = require 'gamify.storage'
 local logic = require 'gamify.logic'
+local utils = require 'gamify.utils'
 
 -- add some emojis and COOLER names to the names later
 
@@ -73,6 +74,33 @@ function M.hours_in_nvim()
     return time_diff
   end
   return 0
+end
+
+-- code for at least 3 hours after between 11PM and 4AM for 5 days. (doesn't have to be consecutive)
+function M.night_owl()
+  local last_log = storage.load_data().last_time_entry or os.date '%Y%m%d %H:%M:%S'
+  local parsed_last_log_time = utils.parse_time(last_log)
+  local hour = tonumber(parsed_last_log_time.hour)
+
+  if hour >= 23 or hours <= 4 then
+    local current_time = os.date '%Y%m%d %H:%M:%S'
+
+    local time_diff = utils.check_hour_difference(current_time, last_log)
+  end
+  if time_diff >= 3 then
+    print 'xd'
+  end
+end
+
+function M.early_bird() end
+
+-- Code for at least 4 h without closing nvim
+function M.marathon_coder()
+  local start_time = os.time(storage.get_last_day()) or os.date '%Y-%m-%d %H:%M:%S'
+  local current_date = os.date '%Y-%m-%d %H:%M:%S'
+
+  local time_diff = utils.check_hour_difference(current_date, start_time)
+  return time_diff >= 4 and 'Marathoner!'
 end
 
 return M

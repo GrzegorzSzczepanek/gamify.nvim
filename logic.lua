@@ -24,10 +24,18 @@ end
 function M.set_time_entry()
   local data = storage.load_data()
   data.last_time_entry = os.date '%Y-%m-%d %H:%M:%S'
+  storage.save_data(data)
 end
 
 function M.get_data()
   return user_data
+end
+
+-- time measured in seconds from last log to closing nvim
+-- used only when nvim is closed
+function M.add_total_time_spent()
+  local log_time = M.get_data().last_time_entry
+  local current_time = os.date '%Y%m%d %H:%M:%S'
 end
 
 return M
