@@ -78,21 +78,69 @@ end
 
 -- code for at least 3 hours after between 11PM and 4AM for 5 days. (doesn't have to be consecutive)
 function M.night_owl()
-  local last_log = storage.load_data().last_time_entry or os.date '%Y%m%d %H:%M:%S'
+  local data = storage.load_data()
+  local last_log = data.last_time_entry or os.date '%Y%m%d %H:%M:%S'
   local parsed_last_log_time = utils.parse_time(last_log)
   local hour = tonumber(parsed_last_log_time.hour)
 
-  if hour >= 23 or hours <= 4 then
+  if hour >= 23 or hour <= 4 then
     local current_time = os.date '%Y%m%d %H:%M:%S'
-
     local time_diff = utils.check_hour_difference(current_time, last_log)
-  end
-  if time_diff >= 3 then
-    print 'xd'
+    if time_diff >= 3 then
+      data.code_nights = (data.code_nights or 0) + 1
+      storage.save_data(data)
+      if data.code_nights == 4 then
+        return 'Achievement for night owl idk'
+      end
+    end
   end
 end
 
-function M.early_bird() end
+function M.early_bird()
+  local data = storage.load_data()
+  local last_log = data.last_time_entry or os.date '%Y%m%d %H:%M:%S'
+  local parsed_last_log_time = utils.parse_time(last_log)
+  local hour = tonumber(parsed_last_log_time.hour)
+
+  if hour >= 6 or hour <= 11 then
+    local current_time = os.date '%Y%m%d %H:%M:%S'
+    local time_diff = utils.check_hour_difference(current_time, last_log)
+    if time_diff >= 3 then
+      data.code_mornings = (data.code_mornings or 0) + 1
+      storage.save_data(data)
+      if data.code_mornings == 4 then
+        return 'Achievement for night owl idk'
+      end
+    end
+  end
+end
+
+function M.lines_in_langues(num_of_langs, threshold)
+  local data = storage.load_data()
+  local lines_per_lang = data.lines_written_in_specified_langs
+  local number_of_lines_above_threshold = 0
+  for language, lines in pairs(lines_per_lang) do
+    if lines >= threshold then
+      number_of_lines_above_threshold = (number_of_lines_above_threshold or 0) + 1
+    end
+  end
+  if number_of_lines_above_threshold == num_of_langs then
+    return true
+  end
+  return false
+end
+
+function M.jack_of_many()
+  if M.lines_in_langues(5, 1000) then
+    return 'SOMETHIGN For at least 1000 lines in more than 5 langues'
+  end
+end
+
+function M.polyglot()
+  if M.lines_in_langues(5, 1000) then
+    return 'SOMETHIGN For at least 1000 lines in more than 10 langues'
+  end
+end
 
 -- Code for at least 4 h without closing nvim
 function M.marathon_coder()

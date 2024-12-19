@@ -31,6 +31,7 @@ function M.load_data()
       time_spent = 0,
       code_nights = 0,
       code_mornings = 0,
+      lines_written_in_specified_langs = {},
     } -- Default data
   end
   local content = file:read '*a'
