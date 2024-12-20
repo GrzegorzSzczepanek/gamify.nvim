@@ -1,3 +1,5 @@
+-- String return statements are just placeholders for now until I find some satisfying way of showing info
+
 local M = {}
 local storage = require 'gamify.storage'
 
@@ -36,6 +38,16 @@ end
 function M.add_total_time_spent()
   local log_time = M.get_data().last_time_entry
   local current_time = os.date '%Y%m%d %H:%M:%S'
+end
+
+-- I shuold have some compliment dict and pick random one to show in notification
+function M.random_luck()
+  if math.random(8) == 7 then
+    local xp_amount = 50
+    M.add_xp(xp_amount)
+    return 'Random Compliment, you get ' .. xp_amount .. ' for that'
+  end
+  return nil
 end
 
 return M

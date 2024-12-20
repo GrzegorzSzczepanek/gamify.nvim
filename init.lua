@@ -34,6 +34,7 @@ function M.init()
 
   if storage.log_new_day() then
     logic.add_xp(10)
+    logic.random_luck()
   end
 
   vim.api.nvim_create_user_command('Gamify', function()
