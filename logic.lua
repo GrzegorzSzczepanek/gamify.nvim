@@ -3,6 +3,8 @@
 local M = {}
 local storage = require 'gamify.storage'
 local config = require 'gamify.config'
+local achievements = require 'gamify.achievements'
+local utils = require 'gamify.utils'
 
 local user_data = storage.load_data()
 
@@ -37,8 +39,13 @@ end
 -- time measured in seconds from last log to closing nvim
 -- used only when nvim is closed
 function M.add_total_time_spent()
-  local log_time = M.get_data().last_time_entry
+  local last_log = M.get_data().last_time_entry
   local current_time = os.date '%Y%m%d %H:%M:%S'
+
+  local time_diff = utils.check_hour_difference(current_time, last_log)
+  local data = storage.load_data()
+  data.total_time = data.total_time + time_diff
+  storage.save_data(data)
 end
 
 -- I shuold have some compliment dict and pick random one to show in notification
@@ -50,6 +57,34 @@ function M.random_luck()
     return today_compliment .. ' \nYou receive' .. xp_amount
   end
   return nil
+end
+
+function M.track_error_fixes()
+  vim.api.nvim_create_autocmd({ 'TextChanged', 'BufWritePost' }, {
+    callback = function()
+      local diagnostics = vim.diagnostic.get(0)
+      local has_errors = false
+
+      for _, diag in ipairs(diagnostics) do
+        if diag.severity == vim.diagnostic.severity.ERROR then
+          has_errors = true
+          break
+        end
+      end
+      -- there should be some logic for adding achievements to data table
+      if not has_errors then
+        local data = storage.load_data()
+        data.errors_fixed = (data.errors_fixed or 0) + 1
+        if data.errors_fixed == 20 then
+          achievements.debug_master()
+        elseif data.errors_fixed == 50 then
+          achievements.fifty_shades_of_debug()
+        elseif data.errors_fixed == 100 then
+          achievements.coding_deity()
+        end
+      end
+    end,
+  })
 end
 
 return M

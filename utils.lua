@@ -6,6 +6,7 @@ function M.parse_time(time_string)
   return { year = year, month = month, day = day, hour = hour, min = min, sec = sec }
 end
 
+-- returns difference between specified times in Y:m:d H:M:S format
 function M.check_hour_difference(time1, time2)
   local first_time = M.parse_time(time1)
   local second_time = M.parse_time(time2)

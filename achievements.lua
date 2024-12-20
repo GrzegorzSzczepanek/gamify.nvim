@@ -191,7 +191,7 @@ end
 
 -- 100 bugs per day fixed
 function M.coding_deity()
-  return M.check_error_fixes_in_a_day(50) and 'Debigging deity.'
+  return M.check_error_fixes_in_a_day(100) and 'Debigging deity.'
 end
 
 return M
