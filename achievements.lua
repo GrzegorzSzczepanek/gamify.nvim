@@ -1,3 +1,5 @@
+-- TODO achievements should have their table in storage and instead results we should get popup and insert to table and update user data
+
 local M = {}
 
 local storage = require 'gamify.storage'
@@ -142,13 +144,54 @@ function M.polyglot()
   end
 end
 
--- Code for at least 4 h without closing nvim
+-- Code for at least 5 h without closing nvim
 function M.marathon_coder()
   local start_time = os.time(storage.get_last_day()) or os.date '%Y-%m-%d %H:%M:%S'
   local current_date = os.date '%Y-%m-%d %H:%M:%S'
 
   local time_diff = utils.check_hour_difference(current_date, start_time)
-  return time_diff >= 4 and 'Marathoner!'
+  return time_diff >= 5 and 'Marathoner!'
+end
+
+function M.fixed_errors(number_of_errors)
+  local data = logic.get_data()
+  if data.errors_fixed >= number_of_errors then
+    return true
+  end
+
+  return false
+end
+
+--
+function M.check_error_fixes_in_a_day(number_of_errors)
+  local todays_timelog = storage.get_last_log() or os.date '%Y-%m-%d %H:%M:%S'
+  local current_date = os.date '%Y-%m-%d %H:%M:%S'
+
+  if type(todays_timelog) == 'string' and type(current_date) == 'string' then
+    -- extracting the date part
+    local timelog_date_only = string.sub(todays_timelog, 1, 10)
+    local current_date_only = string.sub(current_date, 1, 10)
+
+    if timelog_date_only == current_date_only and M.fixed_errors(number_of_errors) then
+      return 'debug done'
+    end
+  end
+  return nil
+end
+
+-- fix 20 errors in a day
+function M.debug_master()
+  return M.check_error_fixes_in_a_day(20) and 'Debug master'
+end
+
+-- fix 50 errors in a day
+function M.fifty_shades_of_debug()
+  return M.check_error_fixes_in_a_day(50) and '50 Shades of Debugging'
+end
+
+-- 100 bugs per day fixed
+function M.coding_deity()
+  return M.check_error_fixes_in_a_day(50) and 'Debigging deity.'
 end
 
 return M

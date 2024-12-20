@@ -14,6 +14,7 @@ local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
 -- total_time_in_nvim = 0 - in hours
 -- code_nights = 0 -- times user spent more than 3 hours in editor between 11PM and 4AM
 -- code_mornigs = 0 -- times users spent more than 3 hours in editor between 6AM and 11AM
+-- errors_fixed = 0
 -- }
 
 function M.load_data()
@@ -32,6 +33,7 @@ function M.load_data()
       code_nights = 0,
       code_mornings = 0,
       lines_written_in_specified_langs = {},
+      errors_fixed = 0,
     } -- Default data
   end
   local content = file:read '*a'
@@ -65,13 +67,14 @@ function M.validate_time_entry(entry)
   return false
 end
 
-function M.get_last_entry()
+function M.get_last_log()
   local data = M.load_data()
   local entry = data.last_time_entry
 
   if entry and M.validate_time_entry(entry) then
     return entry
   end
+  return os.date '%Y%d%s %H:%m:%s'
 end
 
 -- it returns boolean so we can know if we should add exp to user for logging

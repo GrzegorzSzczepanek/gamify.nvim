@@ -2,6 +2,7 @@
 
 local M = {}
 local storage = require 'gamify.storage'
+local config = require 'gamify.config'
 
 local user_data = storage.load_data()
 
@@ -42,10 +43,11 @@ end
 
 -- I shuold have some compliment dict and pick random one to show in notification
 function M.random_luck()
-  if math.random(8) == 7 then
+  if math.random(4) == 3 then
     local xp_amount = 50
     M.add_xp(xp_amount)
-    return 'Random Compliment, you get ' .. xp_amount .. ' for that'
+    local today_compliment = config.compliments(math.random(#config.compliments))
+    return today_compliment .. ' \nYou receive' .. xp_amount
   end
   return nil
 end
