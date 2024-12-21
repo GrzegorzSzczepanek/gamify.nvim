@@ -3,7 +3,6 @@
 local M = {}
 local storage = require 'gamify.storage'
 local config = require 'gamify.config'
-local achievements = require 'gamify.achievements'
 local utils = require 'gamify.utils'
 
 local user_data = storage.load_data()
@@ -11,7 +10,6 @@ local user_data = storage.load_data()
 function M.add_xp(amount)
   user_data.xp = (user_data.xp or 0) + amount
   storage.save_data(user_data)
-  return user_data.xp
 end
 
 function M.add_achievement(achievement)
@@ -53,38 +51,10 @@ function M.random_luck()
   if math.random(4) == 3 then
     local xp_amount = 50
     M.add_xp(xp_amount)
-    local today_compliment = config.compliments(math.random(#config.compliments))
-    return today_compliment .. ' \nYou receive' .. xp_amount
+    local today_compliment = config.compliments[math.random(#config.compliments)]
+    return today_compliment
   end
   return nil
-end
-
-function M.track_error_fixes()
-  vim.api.nvim_create_autocmd({ 'TextChanged', 'BufWritePost' }, {
-    callback = function()
-      local diagnostics = vim.diagnostic.get(0)
-      local has_errors = false
-
-      for _, diag in ipairs(diagnostics) do
-        if diag.severity == vim.diagnostic.severity.ERROR then
-          has_errors = true
-          break
-        end
-      end
-      -- there should be some logic for adding achievements to data table
-      if not has_errors then
-        local data = storage.load_data()
-        data.errors_fixed = (data.errors_fixed or 0) + 1
-        if data.errors_fixed == 20 then
-          achievements.debug_master()
-        elseif data.errors_fixed == 50 then
-          achievements.fifty_shades_of_debug()
-        elseif data.errors_fixed == 100 then
-          achievements.coding_deity()
-        end
-      end
-    end,
-  })
 end
 
 return M

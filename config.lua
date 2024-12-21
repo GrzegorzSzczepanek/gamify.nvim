@@ -18,7 +18,7 @@ M.compliments = {
   'No matter the challenge, you’re capable of overcoming it. 💪',
   'Even the greatest started with small steps. You’ve got this! 🌱',
   'If progress was easy, everyone would do it. Keep grinding! 🛠️',
-  'You’ve come so far—don’t stop now! 🚶‍♂️🚶‍♀️',
+  'You’ve come so far—don’t stop now! 🚶',
   'Every day you improve just by showing up. 🌟',
   'You bring creativity and passion to everything you do. 💡',
   'Your work makes a difference, even if you don’t see it yet. 🌍',

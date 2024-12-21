@@ -34,11 +34,11 @@ function M.init()
 
   if storage.log_new_day() then
     logic.add_xp(10)
-    logic.random_luck()
+    ui.random_luck_popup()
   end
 
   vim.api.nvim_create_user_command('Gamify', function()
-    ui.show_status_window()
+    ui.show_languages_ui()
   end, {})
 
   vim.api.nvim_create_autocmd('BufReadPost', {
@@ -51,6 +51,7 @@ function M.init()
     pattern = '*',
     callback = function()
       logic.add_xp(2137)
+      ui.random_luck_popup()
     end,
   })
 

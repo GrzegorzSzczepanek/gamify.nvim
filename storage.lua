@@ -5,7 +5,7 @@ local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
 -- json structure
 -- {
 -- xp = int
--- achievements = {}
+-- achievements = {} -- table of strings
 -- goals = {} -- something like achievements but user sets them themself
 -- date = {} -- days user opened nvim in
 -- lines_of_code_written_in_nvim = {}
@@ -32,7 +32,13 @@ function M.load_data()
       time_spent = 0,
       code_nights = 0,
       code_mornings = 0,
-      lines_written_in_specified_langs = {},
+      lines_written_in_specified_langs = {
+        python = 15000,
+        svelte = 9800,
+        typescript = 3100,
+        javascript = 3000,
+        other = 2700,
+      },
       errors_fixed = 0,
     } -- Default data
   end

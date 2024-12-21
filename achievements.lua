@@ -1,5 +1,4 @@
 -- TODO achievements should have their table in storage and instead results we should get popup and insert to table and update user data
-
 local M = {}
 
 local storage = require 'gamify.storage'
@@ -117,7 +116,7 @@ function M.early_bird()
   end
 end
 
-function M.lines_in_langues(num_of_langs, threshold)
+local function lines_in_langues(num_of_langs, threshold)
   local data = storage.load_data()
   local lines_per_lang = data.lines_written_in_specified_langs
   local number_of_lines_above_threshold = 0
@@ -133,13 +132,13 @@ function M.lines_in_langues(num_of_langs, threshold)
 end
 
 function M.jack_of_many()
-  if M.lines_in_langues(5, 1000) then
+  if lines_in_langues(5, 1000) then
     return 'SOMETHIGN For at least 1000 lines in more than 5 langues'
   end
 end
 
 function M.polyglot()
-  if M.lines_in_langues(5, 1000) then
+  if lines_in_langues(5, 1000) then
     return 'SOMETHIGN For at least 1000 lines in more than 10 langues'
   end
 end
@@ -192,6 +191,34 @@ end
 -- 100 bugs per day fixed
 function M.coding_deity()
   return M.check_error_fixes_in_a_day(100) and 'Debigging deity.'
+end
+
+function M.track_error_fixes()
+  vim.api.nvim_create_autocmd({ 'TextChanged', 'BufWritePost' }, {
+    callback = function()
+      local diagnostics = vim.diagnostic.get(0)
+      local has_errors = false
+
+      for _, diag in ipairs(diagnostics) do
+        if diag.severity == vim.diagnostic.severity.ERROR then
+          has_errors = true
+          break
+        end
+      end
+      -- there should be some logic for adding achievements to data table
+      if not has_errors then
+        local data = storage.load_data()
+        data.errors_fixed = (data.errors_fixed or 0) + 1
+        if data.errors_fixed == 20 then
+          M.debug_master()
+        elseif data.errors_fixed == 50 then
+          M.fifty_shades_of_debug()
+        elseif data.errors_fixed == 100 then
+          M.coding_deity()
+        end
+      end
+    end,
+  })
 end
 
 return M
