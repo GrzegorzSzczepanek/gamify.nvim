@@ -167,12 +167,6 @@ function M.show_languages_ui()
   vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
 end
 
-local achievement_emojis = { '🚀', '🔥', '🌟', '✨', '🎉', '🎖', '🔑', '🏅', '🔔', '🪄', '📣' }
-
-local function get_random_emoji()
-  return achievement_emojis[math.random(#achievement_emojis)]
-end
-
 local function center_text(text, total_width)
   local text_len = vim.fn.strdisplaywidth(text)
   if text_len >= total_width then
@@ -184,7 +178,7 @@ local function center_text(text, total_width)
 end
 
 local function create_achievement_box(name, description, box_width)
-  local content = string.format('%s %s : %s', get_random_emoji(), name, description)
+  local content = string.format('%s %s : %s', name, description)
   content = center_text(content, box_width - 2) -- minus 2 for the box edges
 
   local top = '╭' .. string.rep('─', box_width - 2) .. '╮'
@@ -222,8 +216,6 @@ function M.show_achievements()
   if next(data.achievements) then
     for name, description in pairs(data.achievements) do
       local box_lines = create_achievement_box(name, description, box_width)
-      -- Indent each box so it's centered in a wider window
-      -- We'll add left padding based on the difference between window width and box width (later).
       vim.list_extend(lines, box_lines)
       table.insert(lines, '')
     end
@@ -250,7 +242,6 @@ function M.show_achievements()
 
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, final_lines)
 
-  -- Create the floating window
   local win = vim.api.nvim_open_win(buffer, true, {
     style = 'minimal',
     relative = 'editor',
@@ -281,7 +272,6 @@ function M.show_achievements()
         if vim.tbl_contains(border_chars, c) then
           vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementBoxBorder', i - 1, col, col + 1)
         elseif c ~= ' ' then
-          -- The rest (non-space, non-border chars) is considered box text
           vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementBoxText', i - 1, col, col + 1)
         end
       end

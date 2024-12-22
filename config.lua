@@ -30,4 +30,22 @@ M.compliments = {
   'Believe in your abilities. The best is yet to come. 🌟',
 }
 
+M.all_achievements = {
+  ['Polyglot'] = '1000 lines in 10 languages',
+  ['Jack of Many'] = '1000 lines in at least 5 different languages',
+  ['Debug Master'] = 'Fix 20 errors in a single day',
+  ['50 Shades of Debug'] = 'Fix 50 errors in a single day',
+  ['Coding Deity'] = 'Fix 100 errors in a single day',
+  ['Night Owl'] = 'Code for 3+ hours between 11PM and 4AM for 5 days',
+  ['Early Bird'] = 'Code for 3+ hours between 6AM and 11AM for 5 days',
+  ['Marathon Coder'] = 'Code continuously for at least 5 hours',
+  ['Thousand Lines'] = 'Write 1000 lines of code',
+  ['Two Thousand Lines'] = 'Write 2000 lines of code',
+  ['Five Thousand Lines'] = 'Write 5000 lines of code',
+  ['Ten Thousand Lines'] = 'Write 10000 lines of code',
+  ['Weekly Streak'] = 'Open Neovim every day for 7 consecutive days',
+  ['Two Weeks Streak'] = 'Open Neovim every day for 14 consecutive days',
+  ['One Month Streak'] = 'Open Neovim every day for 30 consecutive days',
+}
+
 return M

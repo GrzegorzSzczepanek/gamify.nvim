@@ -20,4 +20,12 @@ function M.check_hour_difference(time1, time2)
   return diff_in_hours
 end
 
+function M.get_table_length(t)
+  local count = 0
+  for _ in pairs(t) do
+    count = count + 1
+  end
+  return count
+end
+
 return M
