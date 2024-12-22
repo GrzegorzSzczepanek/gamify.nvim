@@ -64,8 +64,6 @@ function M.ten_thousand_lines()
   return check_lines and 'Ten Thousand line journey!'
 end
 
--- "jack of many" or somethign like that achievement will be given for 1000 lines in at least 5 different langs each
-
 function M.hours_in_nvim()
   local data = storage.load_data()
   local last_time = data.last_time_entry

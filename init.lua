@@ -38,7 +38,8 @@ function M.init()
   end
 
   vim.api.nvim_create_user_command('Gamify', function()
-    ui.show_languages_ui()
+    -- ui.show_languages_ui()
+    ui.show_achievements()
   end, {})
 
   vim.api.nvim_create_autocmd('BufReadPost', {

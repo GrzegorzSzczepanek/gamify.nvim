@@ -1,5 +1,6 @@
 local M = {}
 local logic = require 'gamify.logic'
+local storage = require 'gamify.storage'
 
 -- TODO add popups showing that user got exp for something
 -- TODO mineraft-like popups with achievements
@@ -12,7 +13,7 @@ function M.show_status_window()
     '🎮 Gamify.nvim Status 🎮',
     '',
     'XP: ' .. data.xp,
-    'Achievements:',
+    'Achievements: 0/0',
   }
 
   if #data.achievements > 0 then
@@ -166,11 +167,143 @@ function M.show_languages_ui()
   vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
 end
 
+local achievement_emojis = { '🚀', '🔥', '🌟', '✨', '🎉', '🎖', '🔑', '🏅', '🔔', '🪄', '📣' }
+
+local function get_random_emoji()
+  return achievement_emojis[math.random(#achievement_emojis)]
+end
+
+local function center_text(text, total_width)
+  local text_len = vim.fn.strdisplaywidth(text)
+  if text_len >= total_width then
+    return text
+  end
+  local left_spaces = math.floor((total_width - text_len) / 2)
+  local right_spaces = total_width - text_len - left_spaces
+  return string.rep(' ', left_spaces) .. text .. string.rep(' ', right_spaces)
+end
+
+local function create_achievement_box(name, description, box_width)
+  local content = string.format('%s %s : %s', get_random_emoji(), name, description)
+  content = center_text(content, box_width - 2) -- minus 2 for the box edges
+
+  local top = '╭' .. string.rep('─', box_width - 2) .. '╮'
+  local middle = '│' .. content .. '│'
+  local bottom = '╰' .. string.rep('─', box_width - 2) .. '╯'
+
+  return { top, middle, bottom }
+end
+
+function M.show_achievements()
+  local data = storage.load_data()
+
+  local max_len = 0
+  if next(data.achievements) then
+    for name, description in pairs(data.achievements) do
+      local line = string.format('%s : %s', name, description)
+      local display_len = vim.fn.strdisplaywidth(line)
+      if display_len > max_len then
+        max_len = display_len
+      end
+    end
+  else
+    max_len = #'None yet. Keep coding to unlock achievements!'
+  end
+
+  local box_width = max_len + 10
+
+  local lines = {}
+
+  local heading = '🏆🏆🏆   A C H I E V E M E N T S   🏆🏆🏆'
+  heading = center_text(heading, box_width)
+  table.insert(lines, heading)
+  table.insert(lines, '')
+
+  if next(data.achievements) then
+    for name, description in pairs(data.achievements) do
+      local box_lines = create_achievement_box(name, description, box_width)
+      -- Indent each box so it's centered in a wider window
+      -- We'll add left padding based on the difference between window width and box width (later).
+      vim.list_extend(lines, box_lines)
+      table.insert(lines, '')
+    end
+  else
+    table.insert(lines, center_text('None yet. Keep coding to unlock achievements!', box_width))
+    table.insert(lines, '')
+  end
+
+  table.insert(lines, center_text('Press Esc to close', box_width))
+
+  local width = box_width + 8
+  local height = #lines + 2
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  local buffer = vim.api.nvim_create_buf(false, true)
+  local final_lines = {}
+  local left_padding = math.floor((width - box_width) / 2)
+
+  for _, line_text in ipairs(lines) do
+    local indented_line = string.rep(' ', left_padding) .. line_text
+    table.insert(final_lines, indented_line)
+  end
+
+  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, final_lines)
+
+  -- Create the floating window
+  local win = vim.api.nvim_open_win(buffer, true, {
+    style = 'minimal',
+    relative = 'editor',
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    border = 'rounded',
+  })
+
+  vim.cmd [[
+    highlight AchievementTitle    gui=bold guifg=#FFD700
+    highlight AchievementBorder   guifg=#FFD700
+    highlight AchievementBoxBorder guifg=#FFD700
+    highlight AchievementBoxText  guifg=#FFFFFF
+  ]]
+
+  vim.api.nvim_win_set_option(win, 'winhighlight', 'FloatBorder:AchievementBorder')
+
+  vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementTitle', 0, left_padding, -1)
+
+  local border_chars = { '╭', '╮', '╰', '╯', '─', '│' }
+  for i, line_text in ipairs(final_lines) do
+    if line_text:match '^[%s]*[╭╰│]' then
+      local start_col = 0
+      for col = 0, #line_text - 1 do
+        local c = line_text:sub(col + 1, col + 1)
+        if vim.tbl_contains(border_chars, c) then
+          vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementBoxBorder', i - 1, col, col + 1)
+        elseif c ~= ' ' then
+          -- The rest (non-space, non-border chars) is considered box text
+          vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementBoxText', i - 1, col, col + 1)
+        end
+      end
+    end
+  end
+
+  vim.api.nvim_buf_set_keymap(buffer, 'n', '<Esc>', ':q<CR>', { noremap = true, silent = true })
+  vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
+end
+
 -- 25% chance for displaying popup with random compliment and giving 25exp
 function M.random_luck_popup()
   local lucky_message = logic.random_luck()
   if lucky_message then
     M.show_popup(lucky_message, 'Just fyi', 'top_right')
+  end
+end
+
+function M.show_achievement_popup(name)
+  local description = storage.load_data().achievements[name]
+  if description then
+    M.show_popup('Achievement Unlocked: ' .. name .. '\n' .. description, 'top_right')
   end
 end
 
