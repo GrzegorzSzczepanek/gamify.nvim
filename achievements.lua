@@ -28,11 +28,7 @@ function M.weekly_streak()
   logic.add_xp(500)
   if check_streak(7) then
     local data = storage.load_data()
-
-    -- Add or update the “Weekly Streak” achievement:
     data.achievements['Weekly Streak'] = 'Open Neovim every day for 7 consecutive days'
-
-    -- Persist the data
     storage.save_data(data)
   end
 end
@@ -41,9 +37,7 @@ function M.two_weeks_streak()
   logic.add_xp(1500)
   if check_streak(14) then
     local data = storage.load_data()
-
     data.achievements['Two Weeks Streak'] = 'Open Neovim every day for 14 consecutive days'
-
     storage.save_data(data)
   end
 end
@@ -52,9 +46,7 @@ function M.month_streak()
   logic.add_xp(4000)
   if check_streak(30) then
     local data = storage.load_data()
-
     data.achievements['One Month Streak'] = 'Open Neovim every day for 30 consecutive days'
-
     storage.save_data(data)
   end
 end
@@ -98,17 +90,6 @@ function M.ten_thousand_lines()
     data.achievements['Ten Thousand Lines'] = 'Write 10000 lines of code'
     storage.save_data(data)
   end
-end
-
-function M.hours_in_nvim()
-  local data = storage.load_data()
-  local last_time = data.last_time_entry
-  if last_time then
-    local current_time = os.time()
-    local time_diff = os.difftime(current_time, last_time)
-    return time_diff
-  end
-  return 0
 end
 
 -- code for at least 3 hours after between 11PM and 4AM for 5 days. (doesn't have to be consecutive)
@@ -210,7 +191,6 @@ function M.fixed_errors(number_of_errors)
   return false
 end
 
---
 function M.check_error_fixes_in_a_day(number_of_errors)
   local todays_timelog = storage.get_last_log() or os.date '%Y-%m-%d %H:%M:%S'
   local current_date = os.date '%Y-%m-%d %H:%M:%S'
@@ -266,15 +246,24 @@ function M.track_error_fixes()
           break
         end
       end
-      -- there should be some logic for adding achievements to data table
+
       if not has_errors then
         local data = storage.load_data()
-        data.errors_fixed = (data.errors_fixed or 0) + 1
-        if data.errors_fixed == 20 then
+        local errors_fixed = (data.errors_fixed or 0) + 1
+        if errors_fixed >= 20 and errors_fixed < 50 then
           M.debug_master()
-        elseif data.errors_fixed == 50 then
+        elseif errors_fixed >= 50 and errors_fixed < 100 then
+          if not data.achievements['Debug Master'] then
+            M.debug_master()
+          end
           M.fifty_shades_of_debug()
-        elseif data.errors_fixed == 100 then
+        elseif data.errors_fixed >= 100 then
+          if not data.achievements['Debug Master'] then
+            M.debug_master()
+          end
+          if not data.achievements['50 Shades of Debug'] then
+            M.fifty_shades_of_debug()
+          end
           M.coding_deity()
         end
       end

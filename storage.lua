@@ -15,7 +15,9 @@ local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
 -- code_nights = 0 -- times user spent more than 3 hours in editor between 11PM and 4AM
 -- code_mornigs = 0 -- times users spent more than 3 hours in editor between 6AM and 11AM
 -- errors_fixed = 0
+-- day_streak = 0 -- streak in opening nvim in consecutive days
 -- }
+--
 
 function M.load_data()
   local file = io.open(data_file, 'r')
@@ -28,10 +30,8 @@ function M.load_data()
         ['Debug Master'] = 'Fix 20 errors in a single day',
         ['50 Shades of Debug'] = 'Fix 50 errors in a single day',
         ['Coding Deity'] = 'Fix 100 errors in a single day',
-        ['Night Owl'] = 'Code for 3+ hours between 11PM and 4AM for 5 days',
         ['Early Bird'] = 'Code for 3+ hours between 6AM and 11AM for 5 days',
         ['Marathon Coder'] = 'Code continuously for at least 5 hours',
-        ['Thousand Lines'] = 'Write 1000 lines of code',
         ['Two Thousand Lines'] = 'Write 2000 lines of code',
         ['Five Thousand Lines'] = 'Write 5000 lines of code',
         ['Ten Thousand Lines'] = 'Write 10000 lines of code',
@@ -48,14 +48,9 @@ function M.load_data()
       time_spent = 0,
       code_nights = 0,
       code_mornings = 0,
-      lines_written_in_specified_langs = {
-        python = 15000,
-        svelte = 9800,
-        typescript = 3100,
-        javascript = 3000,
-        other = 2700,
-      },
+      lines_written_in_specified_langs = {},
       errors_fixed = 0,
+      day_streak = 0,
     } -- Default data
   end
   local content = file:read '*a'
@@ -117,6 +112,90 @@ function M.log_new_day()
   end
 
   return false
+end
+
+local function ensure_lang_table(data)
+  data.lines_in_specified_langs = data.lines_in_specified_langs or {}
+end
+
+local function split(input, delimiter)
+  local result = {}
+  for match in (input .. delimiter):gmatch('(.-)' .. delimiter) do
+    table.insert(result, match)
+  end
+  return result
+end
+
+local function get_file_language(file_path)
+  -- Extract the file name from the full path
+  local file_split = split(file_path, '.')
+  local file_extension = file_split[#file_split]
+
+  local language_map = {
+    lua = 'Lua',
+    py = 'Python',
+    js = 'JavaScript',
+    ts = 'TypeScript',
+    rb = 'Ruby',
+    go = 'Go',
+    rs = 'Rust',
+    cpp = 'C++',
+    c = 'C',
+    java = 'Java',
+    php = 'PHP',
+    html = 'HTML',
+    css = 'CSS',
+    swift = 'Swift',
+    kt = 'Kotlin',
+    cs = 'C#',
+    json = 'JSON',
+    md = 'Markdown',
+    sh = 'Shell',
+    yaml = 'YAML',
+    toml = 'TOML',
+    xml = 'XML',
+    hs = 'Haskell',
+    pl = 'Perl',
+    r = 'R',
+    scala = 'Scala',
+    dart = 'Dart',
+    ex = 'Elixir',
+    erl = 'Erlang',
+    scss = 'SCSS',
+    coffee = 'CoffeeScript',
+    jsx = 'JavaScript (React)',
+    tsx = 'TypeScript (React)',
+    vim = 'Vim Script',
+    unknown = 'Unknown',
+  }
+  return language_map[file_extension] or file_extension
+end
+
+local function update_lines_for_language(lang, new_lines)
+  local data = M.load_data()
+  ensure_lang_table(data)
+  data.lines_written_in_specified_langs[lang] = (data.lines_written_in_specified_langs[lang] or 0) + new_lines
+
+  M.save_data(data)
+end
+
+function M.track_lines_on_save()
+  local data = M.load_data()
+  ensure_lang_table(data)
+
+  local buffer = vim.api.nvim_get_current_buf()
+  local file_path = vim.api.nvim_buf_get_name(buffer)
+  local lang = get_file_language(file_path)
+
+  local current_line_count = vim.api.nvim_buf_line_count(buffer)
+  data.lines_written = data.lines_written or {}
+  local previous_line_count = data.lines_written_in_specified_langs[file_path] or 0
+
+  local lines_added = math.max(current_line_count - previous_line_count, 0)
+  update_lines_for_language(lang, lines_added)
+  data.lines_written_in_specified_langs[file_path] = current_line_count
+  data.lines_written = data.lines_written + lines_added
+  M.save_data(data)
 end
 
 return M

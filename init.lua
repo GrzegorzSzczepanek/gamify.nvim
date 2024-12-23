@@ -38,7 +38,14 @@ function M.init()
   end
 
   vim.api.nvim_create_user_command('Gamify', function()
-    -- ui.show_languages_ui()
+    ui.show_status_window()
+  end, {})
+
+  vim.api.nvim_create_user_command('LangStats', function()
+    ui.show_languages_ui()
+  end, {})
+
+  vim.api.nvim_create_user_command('Achievements', function()
     ui.show_achievements()
   end, {})
 
@@ -52,6 +59,7 @@ function M.init()
     pattern = '*',
     callback = function()
       logic.add_xp(2137)
+      storage.track_lines_on_save()
       ui.random_luck_popup()
     end,
   })

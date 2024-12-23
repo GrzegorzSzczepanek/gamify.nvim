@@ -1,28 +1,24 @@
 local M = {}
 local logic = require 'gamify.logic'
 local storage = require 'gamify.storage'
-
--- TODO add popups showing that user got exp for something
--- TODO mineraft-like popups with achievements
+local utils = require 'gamify.utils'
+local config = require 'gamify.config'
 
 function M.show_status_window()
   local buffer = vim.api.nvim_create_buf(false, true)
 
   local data = logic.get_data()
+  local all_achievements_len = utils.get_table_length(config.all_achievements)
+  local user_achievements_len = utils.get_table_length(data.achievements)
   local lines = {
     '🎮 Gamify.nvim Status 🎮',
     '',
     'XP: ' .. data.xp,
-    'Achievements: 0/0',
+    'Achievements: ' .. user_achievements_len .. '/' .. all_achievements_len,
+    'Total lines written: ' .. data.lines_written,
+    'Total errors fixed: ' .. data.errors_fixed,
+    "You're on " .. data.day_streak .. ' day streak.',
   }
-
-  if #data.achievements > 0 then
-    for _, achievement in ipairs(data.achievements) do
-      table.insert(lines, '- ' .. achievement)
-    end
-  else
-    table.insert(lines, 'None yet.')
-  end
 
   table.insert(lines, '')
   table.insert(lines, 'Goals:')
@@ -178,7 +174,12 @@ local function center_text(text, total_width)
 end
 
 local function create_achievement_box(name, description, box_width)
-  local content = string.format('%s %s : %s', name, description)
+  -- Ensure description and name are not nil to avoid formatting errors
+  description = description or 'No description available'
+  name = name or 'Unnamed Achievement'
+
+  -- Corrected format string with two placeholders
+  local content = string.format('%s : %s', name, description)
   content = center_text(content, box_width - 2) -- minus 2 for the box edges
 
   local top = '╭' .. string.rep('─', box_width - 2) .. '╮'
