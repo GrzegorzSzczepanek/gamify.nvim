@@ -59,8 +59,8 @@ function M.init()
     pattern = '*',
     callback = function()
       logic.add_xp(2137)
-      storage.track_lines_on_save()
       ui.random_luck_popup()
+      logic.track_lines_on_save()
     end,
   })
 
@@ -70,7 +70,6 @@ function M.init()
       local data = storage.load_data()
       data.last_time_entry = nil
       storage.save_data(data)
-      print 'Gamify progress saved.'
     end,
   })
 

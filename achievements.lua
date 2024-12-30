@@ -1,11 +1,8 @@
--- TODO achievements should have their table in storage and instead results we should get popup and insert to table and update user data
 local M = {}
 
 local storage = require 'gamify.storage'
 local logic = require 'gamify.logic'
 local utils = require 'gamify.utils'
-
--- add some emojis and COOLER names to the names later
 
 local function check_streak(days)
   local data = storage.load_data()

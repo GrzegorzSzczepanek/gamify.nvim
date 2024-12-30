@@ -128,7 +128,7 @@ function M.show_languages_ui()
   end)
 
   local ui_lines = { '📊 Language Stats 📊', '', 'Most Used Languages:' }
-  local max_bar_length = 30
+  local max_bar_length = 50
   local max_lines = lang_lines[1] and lang_lines[1].lines or 1
 
   for _, lang_data in ipairs(lang_lines) do
@@ -150,10 +150,10 @@ function M.show_languages_ui()
   local opts = {
     style = 'minimal',
     relative = 'editor',
-    width = 50,
+    width = 80,
     height = #ui_lines + 2,
     row = math.floor((vim.o.lines - (#ui_lines + 2)) / 2),
-    col = math.floor((vim.o.columns - 50) / 2),
+    col = math.floor((vim.o.columns - 80) / 2),
     border = 'rounded',
   }
 

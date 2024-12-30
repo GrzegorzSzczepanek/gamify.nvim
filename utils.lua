@@ -41,4 +41,46 @@ function M.hours_in_nvim()
   return 0
 end
 
+function M.get_file_language(extension)
+  local language_map = {
+    lua = 'Lua',
+    py = 'Python',
+    js = 'JavaScript',
+    ts = 'TypeScript',
+    rb = 'Ruby',
+    go = 'Go',
+    rs = 'Rust',
+    cpp = 'C++',
+    c = 'C',
+    java = 'Java',
+    php = 'PHP',
+    html = 'HTML',
+    css = 'CSS',
+    swift = 'Swift',
+    kt = 'Kotlin',
+    cs = 'C#',
+    json = 'JSON',
+    md = 'Markdown',
+    sh = 'Shell',
+    yaml = 'YAML',
+    toml = 'TOML',
+    xml = 'XML',
+    hs = 'Haskell',
+    pl = 'Perl',
+    r = 'R',
+    scala = 'Scala',
+    dart = 'Dart',
+    ex = 'Elixir',
+    exs = 'Elixir',
+    erl = 'Erlang',
+    scss = 'SCSS',
+    coffee = 'CoffeeScript',
+    jsx = 'JavaScript (React)',
+    tsx = 'TypeScript (React)',
+    vim = 'Vim Script',
+    unknown = 'Unknown',
+  }
+  return language_map[extension]
+end
+
 return M
