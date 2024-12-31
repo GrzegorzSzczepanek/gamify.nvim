@@ -30,6 +30,7 @@ function M.get_table_length(t)
   return count
 end
 
+-- TODO: unify time and fix inconsistencies
 function M.hours_in_nvim()
   local data = storage.load_data()
   local last_time = data.last_time_entry
@@ -102,10 +103,8 @@ function M.calculate_all_lines_written()
     end
   end
 
-  data.lines_written = data.lines_written + all_lines
+  data.lines_written = all_lines
   storage.save_data(data)
-
-  return all_lines
 end
 
 return M

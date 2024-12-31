@@ -1,5 +1,3 @@
--- String return statements are just placeholders for now until I find some satisfying way of showing info
-
 local M = {}
 local storage = require 'gamify.storage'
 local config = require 'gamify.config'
@@ -56,13 +54,13 @@ function M.random_luck()
   return nil
 end
 
-function M.track_lines_on_save()
+function M.track_lines()
   local data = storage.load_data()
   data.commit_hashes = data.commit_hashes or {}
 
   local new_commit_handle = io.popen 'git rev-parse HEAD'
   if not new_commit_handle then
-    print 'Failed to get the latest commit hash.'
+    -- print 'Failed to get the latest commit hash.'
     return
   end
 
@@ -70,13 +68,13 @@ function M.track_lines_on_save()
   new_commit_handle:close()
 
   if vim.tbl_contains(data.commit_hashes, new_commit_hash) then
-    print 'Commit already processed. Skipping...'
+    -- print 'Commit already processed. Skipping...'
     return
   end
 
   local handle = io.popen 'git diff --numstat HEAD~1 HEAD'
   if not handle then
-    print 'Failed to execute git diff.'
+    -- print 'Failed to execute git diff.'
     return
   end
 
@@ -84,7 +82,7 @@ function M.track_lines_on_save()
   handle:close()
 
   if not result or result == '' then
-    print 'No changes detected in git diff.'
+    -- print 'No changes detected in git diff.'
     return
   end
 

@@ -3,6 +3,7 @@ local M = {}
 local storage = require 'gamify.storage'
 local logic = require 'gamify.logic'
 local utils = require 'gamify.utils'
+local ui = require 'gamify.ui'
 
 local function check_streak(days)
   local data = storage.load_data()
@@ -86,7 +87,7 @@ local achievement_definitions = {
     description = 'Write 100 lines of code',
     xp = 150,
     check = function()
-      return check_lines(1000)
+      return check_lines(100)
     end,
   },
   {
@@ -217,7 +218,7 @@ function M.check_all_achievements()
       logic.add_xp(achievement.xp)
       storage.save_data(data)
 
-      print('[Gamify] Achievement unlocked: ' .. achievement.name)
+      ui.show_achievement_popup(achievement.name)
     end
   end
 end

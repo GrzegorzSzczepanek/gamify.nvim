@@ -5,6 +5,7 @@ local ui = require 'gamify.ui'
 local logic = require 'gamify.logic'
 local storage = require 'gamify.storage'
 local achievements = require 'gamify.achievements'
+local utils = require 'gamify.utils'
 
 local function ensure_data_file()
   local data_dir = vim.fn.stdpath 'data' .. '/gamify'
@@ -36,6 +37,7 @@ function M.init()
   if storage.log_new_day() then
     logic.add_xp(10)
     ui.random_luck_popup()
+    utils.calculate_all_lines_written()
     achievements.check_all_achievements()
   end
 
@@ -60,9 +62,9 @@ function M.init()
   vim.api.nvim_create_autocmd('BufWritePost', {
     pattern = '*',
     callback = function()
-      logic.add_xp(2137)
       ui.random_luck_popup()
-      logic.track_lines_on_save()
+      logic.track_lines()
+      utils.calculate_all_lines_written()
       achievements.check_all_achievements()
     end,
   })
@@ -73,14 +75,9 @@ function M.init()
       local data = storage.load_data()
       data.last_time_entry = nil
       storage.save_data(data)
+      logic.add_total_time_spent()
     end,
   })
-
-  --   vim.api.nvim_create_autocmd('VimLeave', {
-  --   callback = function()
-  --     print("Goodbye! See you next time.")
-  --   end,
-  -- })
 end
 
 M.init()

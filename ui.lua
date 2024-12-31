@@ -10,13 +10,12 @@ function M.show_status_window()
   local data = logic.get_data()
   local all_achievements_len = utils.get_table_length(config.all_achievements)
   local user_achievements_len = utils.get_table_length(data.achievements)
-  local all_lines_written = utils.calculate_all_lines_written()
   local lines = {
     '🎮 Gamify.nvim Status 🎮',
     '',
     'XP: ' .. data.xp,
     'Achievements: ' .. user_achievements_len .. '/' .. all_achievements_len,
-    'Total lines written: ' .. all_lines_written,
+    'Total lines written: ' .. data.lines_written,
     'Total errors fixed: ' .. data.errors_fixed,
     "You're on " .. data.day_streak .. ' day streak.',
   }
@@ -69,11 +68,12 @@ function M.show_popup(text, title, corner)
 
   local buf = vim.api.nvim_create_buf(false, true)
 
-  local lines = {
-    '🟢 [' .. title .. ']',
-    text,
-    'Press any key to dismiss',
-  }
+  local text_lines = vim.split(text, '\n')
+
+  local lines = { '🟢 [' .. title .. ']' }
+  vim.list_extend(lines, text_lines)
+  -- table.insert(lines, 'Press any key to dismiss')
+
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
   local opts = {
@@ -109,7 +109,7 @@ function M.show_popup(text, title, corner)
     if vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_win_close(win, true)
     end
-  end, 3000)
+  end, 5000)
 end
 
 function M.show_languages_ui()
@@ -287,7 +287,6 @@ function M.show_achievements()
   vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
 end
 
--- 25% chance for displaying popup with random compliment and giving 25exp
 function M.random_luck_popup()
   local lucky_message = logic.random_luck()
   if lucky_message then
@@ -295,10 +294,122 @@ function M.random_luck_popup()
   end
 end
 
+function M.show_falling_confetti(count, duration_ms)
+  local confetti_chars = {
+    '✽',
+    '✸',
+    '✹',
+    '*',
+    '~',
+    '❈',
+    '♨',
+    '⚬',
+    '○',
+    '☆',
+    '♥',
+    '♦',
+    '⚛',
+    '✧',
+    '✦',
+  }
+
+  local confetti = {}
+  local screen_height = vim.o.lines
+  local screen_width = vim.o.columns
+
+  local timer = vim.loop.new_timer()
+
+  local function create_particle()
+    local col = math.random(math.floor(screen_width * 0.7), screen_width - 2)
+    local row = 1
+
+    local char = confetti_chars[math.random(#confetti_chars)]
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { char })
+
+    local highlight_group = 'String' -- or define your own highlight
+    vim.api.nvim_buf_add_highlight(buf, -1, highlight_group, 0, 0, -1)
+
+    local win_opts = {
+      style = 'minimal',
+      relative = 'editor',
+      width = 2,
+      height = 1,
+      row = row,
+      col = col,
+      focusable = false,
+      zindex = 300,
+    }
+    local win = vim.api.nvim_open_win(buf, false, win_opts)
+
+    return {
+      buf = buf,
+      win = win,
+      row = row,
+      col = col,
+      -- random vertical speed (pixels/step)
+      vrow = 0.3 + math.random() * 0.3,
+      -- random horizontal drift
+      vcol = (math.random() - 0.5) * 0.5,
+    }
+  end
+
+  -- create multiple pieces
+  for _ = 1, count do
+    table.insert(confetti, create_particle())
+  end
+
+  local start_time = vim.loop.now()
+
+  local function animate()
+    vim.schedule(function()
+      local now = vim.loop.now()
+      local elapsed = now - start_time
+
+      if elapsed > duration_ms then
+        for _, c in ipairs(confetti) do
+          if vim.api.nvim_win_is_valid(c.win) then
+            vim.api.nvim_win_close(c.win, true)
+          end
+        end
+        if not timer:is_closing() then
+          timer:stop()
+          timer:close()
+        end
+        return
+      end
+
+      for _, c in ipairs(confetti) do
+        if vim.api.nvim_win_is_valid(c.win) then
+          c.row = c.row + c.vrow
+          c.col = c.col + c.vcol
+
+          -- if piece goes below the screen, close it
+          if c.row >= (screen_height - 2) then
+            vim.api.nvim_win_close(c.win, true)
+          else
+            -- otherwise update position
+            vim.api.nvim_win_set_config(c.win, {
+              relative = 'editor',
+              row = math.floor(c.row),
+              col = math.floor(c.col),
+            })
+          end
+        end
+      end
+    end)
+  end
+
+  timer:start(0, 80, vim.schedule_wrap(animate))
+end
+
 function M.show_achievement_popup(name)
-  local description = storage.load_data().achievements[name]
+  local data = require('gamify.storage').load_data()
+  local description = data.achievements[name]
   if description then
-    M.show_popup('Achievement Unlocked: ' .. name .. '\n' .. description, 'top_right')
+    M.show_popup('Achievement Unlocked: ' .. name .. '\n' .. description, 'Achievement', 'top_right')
+
+    M.show_falling_confetti(20, 2000)
   end
 end
 
