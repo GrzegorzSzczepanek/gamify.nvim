@@ -4,6 +4,7 @@ local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
 local ui = require 'gamify.ui'
 local logic = require 'gamify.logic'
 local storage = require 'gamify.storage'
+local achievements = require 'gamify.achievements'
 
 local function ensure_data_file()
   local data_dir = vim.fn.stdpath 'data' .. '/gamify'
@@ -35,6 +36,7 @@ function M.init()
   if storage.log_new_day() then
     logic.add_xp(10)
     ui.random_luck_popup()
+    achievements.check_all_achievements()
   end
 
   vim.api.nvim_create_user_command('Gamify', function()
@@ -61,6 +63,7 @@ function M.init()
       logic.add_xp(2137)
       ui.random_luck_popup()
       logic.track_lines_on_save()
+      achievements.check_all_achievements()
     end,
   })
 
