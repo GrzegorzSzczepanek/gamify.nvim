@@ -89,6 +89,15 @@ function M.ten_thousand_lines()
   end
 end
 
+function M.twenty_five_thousand_lines()
+  logic.add_xp(2000)
+  if check_lines(25000) then
+    local data = storage.load_data()
+    data.achievements['Ten Thousand Lines'] = 'Write 10000 lines of code'
+    storage.save_data(data)
+  end
+end
+
 -- code for at least 3 hours after between 11PM and 4AM for 5 days. (doesn't have to be consecutive)
 function M.night_owl()
   local data = storage.load_data()

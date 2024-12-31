@@ -42,7 +42,7 @@ function M.load_data()
       goals = {},
       date = {},
       lines_written = 0,
-      last_time_entry = nil,
+      last_time_entry = os.date '%Y-%m-%d %H:%M:%S',
       total_time = 0,
       lvl = 0,
       time_spent = 0,
@@ -51,7 +51,7 @@ function M.load_data()
       lines_written_in_specified_langs = {},
       errors_fixed = 0,
       day_streak = 0,
-      last_commit_hash = '',
+      commit_hashes = {},
     } -- Default data
   end
   local content = file:read '*a'

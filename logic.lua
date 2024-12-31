@@ -47,7 +47,7 @@ function M.add_total_time_spent()
 end
 
 function M.random_luck()
-  if math.random(4) == 3 then
+  if math.random(50) == 3 then
     local xp_amount = 50
     M.add_xp(xp_amount)
     local today_compliment = config.compliments[math.random(#config.compliments)]
@@ -56,33 +56,25 @@ function M.random_luck()
   return nil
 end
 
-local function get_current_commit_hash()
-  return vim.fn.system('git rev-parse HEAD'):gsub('\n', '')
-end
-
-local function get_git_added_lines()
-  local output = vim.fn.system 'git diff --numstat HEAD'
-  local lines = {}
-
-  -- Match lines with added, deleted, and file columns
-  for added, _, file in string.gmatch(output, '(%d+)%s+%d*%s+(.+)') do
-    if file then
-      local ext = file:match '^.+%.([a-zA-Z0-9]+)$'
-      if ext then
-        lines[ext] = (lines[ext] or 0) + tonumber(added)
-      end
-    end
-  end
-
-  return lines
-end
-
 function M.track_lines_on_save()
   local data = storage.load_data()
-  local last_commit_hash = data.last_commit_hash or ''
+  data.commit_hashes = data.commit_hashes or {}
 
-  -- Run git diff to get added lines for the last commit
-  local handle = io.popen('git diff --numstat ' .. last_commit_hash .. ' HEAD')
+  local new_commit_handle = io.popen 'git rev-parse HEAD'
+  if not new_commit_handle then
+    print 'Failed to get the latest commit hash.'
+    return
+  end
+
+  local new_commit_hash = new_commit_handle:read('*a'):gsub('%s+', '')
+  new_commit_handle:close()
+
+  if vim.tbl_contains(data.commit_hashes, new_commit_hash) then
+    print 'Commit already processed. Skipping...'
+    return
+  end
+
+  local handle = io.popen 'git diff --numstat HEAD~1 HEAD'
   if not handle then
     print 'Failed to execute git diff.'
     return
@@ -96,29 +88,17 @@ function M.track_lines_on_save()
     return
   end
 
-  -- Parse the git diff output
   for added, file in string.gmatch(result, '(%d+)%s+%d+%s+(%S+)') do
     local lines_added = tonumber(added)
     local extension = file:match '^.+%.([a-zA-Z0-9]+)$' or 'unknown'
-    local language = utils.get_file_language(extension) or 'Unknown' -- Ensure extension_to_language_map is defined
+    local language = utils.get_file_language(extension) or 'Unknown'
 
     data.lines_written_in_specified_langs[language] = (data.lines_written_in_specified_langs[language] or 0) + lines_added
+
+    -- print(string.format('Processed: %s (%s): %d lines added', file, language, lines_added))
   end
 
-  local new_commit_handle = io.popen 'git rev-parse HEAD'
-  if not new_commit_handle then
-    print 'Failed to get the new commit hash.'
-    return
-  end
-
-  local new_commit_hash = new_commit_handle:read('*a'):gsub('%s+', '')
-  new_commit_handle:close()
-
-  if new_commit_hash and new_commit_hash ~= '' then
-    data.last_commit_hash = new_commit_hash
-  else
-    print 'Failed to retrieve valid commit hash.'
-  end
+  table.insert(data.commit_hashes, new_commit_hash)
 
   storage.save_data(data)
 end

@@ -80,7 +80,32 @@ function M.get_file_language(extension)
     vim = 'Vim Script',
     unknown = 'Unknown',
   }
+  local excluded_extensions = {
+    json = true,
+    toml = true,
+  }
+  if excluded_extensions[extension] then
+    return nil
+  end
+
   return language_map[extension]
+end
+
+function M.calculate_all_lines_written()
+  local data = storage.load_data()
+  local lines_per_lang = data.lines_written_in_specified_langs or {}
+
+  local all_lines = 0
+  for lang, lines in pairs(lines_per_lang) do
+    if lang ~= 'Unknown' and lines > 0 then
+      all_lines = all_lines + lines
+    end
+  end
+
+  data.lines_written = data.lines_written + all_lines
+  storage.save_data(data)
+
+  return all_lines
 end
 
 return M

@@ -10,12 +10,13 @@ function M.show_status_window()
   local data = logic.get_data()
   local all_achievements_len = utils.get_table_length(config.all_achievements)
   local user_achievements_len = utils.get_table_length(data.achievements)
+  local all_lines_written = utils.calculate_all_lines_written()
   local lines = {
     '🎮 Gamify.nvim Status 🎮',
     '',
     'XP: ' .. data.xp,
     'Achievements: ' .. user_achievements_len .. '/' .. all_achievements_len,
-    'Total lines written: ' .. data.lines_written,
+    'Total lines written: ' .. all_lines_written,
     'Total errors fixed: ' .. data.errors_fixed,
     "You're on " .. data.day_streak .. ' day streak.',
   }
@@ -92,7 +93,6 @@ function M.show_popup(text, title, corner)
   highlight NormalFloat  guibg=NONE
   highlight FloatBorder  guifg=#5f87af guibg=NONE
   ]]
-  -- Make the float’s border and background match highlight groups
   vim.api.nvim_win_set_option(win, 'winhighlight', 'Normal:NormalFloat,FloatBorder:FloatBorder')
 
   vim.api.nvim_buf_add_highlight(buf, -1, 'WarningMsg', 0, 0, -1) -- Title line
@@ -116,10 +116,11 @@ function M.show_languages_ui()
   local data = logic.get_data()
   local lines_per_lang = data.lines_written_in_specified_langs or {}
 
-  -- Convert the table to an array of key-value pairs for sorting
   local lang_lines = {}
   for lang, lines in pairs(lines_per_lang) do
-    table.insert(lang_lines, { lang = lang, lines = lines })
+    if lang ~= 'Unknown' and lines > 0 then
+      table.insert(lang_lines, { lang = lang, lines = lines })
+    end
   end
 
   -- sort the array by the number of lines in descending order
@@ -131,10 +132,15 @@ function M.show_languages_ui()
   local max_bar_length = 50
   local max_lines = lang_lines[1] and lang_lines[1].lines or 1
 
+  local max_lang_length = 0
+  for _, lang_data in ipairs(lang_lines) do
+    max_lang_length = math.max(max_lang_length, #lang_data.lang)
+  end
+
   for _, lang_data in ipairs(lang_lines) do
     local bar_length = math.floor((lang_data.lines / max_lines) * max_bar_length)
     local bar = string.rep('█', bar_length) .. string.rep(' ', max_bar_length - bar_length)
-    table.insert(ui_lines, string.format('%-10s | %s ~%d lines', lang_data.lang, bar, lang_data.lines))
+    table.insert(ui_lines, string.format('%-' .. max_lang_length .. 's | %s ~%d lines', lang_data.lang, bar, lang_data.lines))
   end
 
   if #ui_lines == 3 then
@@ -150,10 +156,10 @@ function M.show_languages_ui()
   local opts = {
     style = 'minimal',
     relative = 'editor',
-    width = 80,
+    width = 100,
     height = #ui_lines + 2,
     row = math.floor((vim.o.lines - (#ui_lines + 2)) / 2),
-    col = math.floor((vim.o.columns - 80) / 2),
+    col = math.floor((vim.o.columns - 100) / 2),
     border = 'rounded',
   }
 
@@ -174,11 +180,9 @@ local function center_text(text, total_width)
 end
 
 local function create_achievement_box(name, description, box_width)
-  -- Ensure description and name are not nil to avoid formatting errors
   description = description or 'No description available'
   name = name or 'Unnamed Achievement'
 
-  -- Corrected format string with two placeholders
   local content = string.format('%s : %s', name, description)
   content = center_text(content, box_width - 2) -- minus 2 for the box edges
 
