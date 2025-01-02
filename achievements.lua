@@ -13,7 +13,7 @@ local function check_streak(days)
 
   local current_time = os.time()
   for i = 0, days - 1 do
-    local expected_date = os.date('%Y-%m_%d', current_time - (i * 86000))
+    local expected_date = os.date('%Y-%m-%d', current_time - (i * 86000))
     if data.date[#data.date - days + 1 + i] ~= expected_date then
       return false
     end
@@ -172,23 +172,7 @@ local achievement_definitions = {
     name = 'Marathoner',
     description = 'Code continuously for at least 6 hours',
     xp = 1800,
-    check = function()
-      local last_day = storage.get_last_day()
-      if not last_day then
-        return false
-      end
-
-      local last_day_table = utils.parse_time(last_day)
-      if not last_day_table then
-        return false
-      end
-
-      local start_time = os.time(last_day_table)
-      local current_time = os.time()
-      local time_diff = os.difftime(current_time, start_time)
-
-      return (time_diff / 3600) >= 6
-    end,
+    check = utils.calculate_time_difference() >= 6,
   },
 
   {

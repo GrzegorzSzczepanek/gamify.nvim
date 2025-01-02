@@ -42,6 +42,25 @@ function M.hours_in_nvim()
   return 0
 end
 
+-- returns difference in hours
+function M.calculate_time_difference()
+  local last_entry = storage.load_data().last_entry
+  if not last_entry then
+    return false
+  end
+
+  local last_entry_table = M.parse_time(last_entry)
+  if not last_entry_table then
+    return false
+  end
+
+  local start_time = os.time(last_entry_table)
+  local current_time = os.time()
+  local time_diff = os.difftime(current_time, start_time)
+
+  return time_diff / 3600
+end
+
 function M.get_file_language(extension)
   local language_map = {
     lua = 'Lua',
@@ -105,6 +124,14 @@ function M.calculate_all_lines_written()
 
   data.lines_written = all_lines
   storage.save_data(data)
+end
+
+function M.get_day_streak()
+  local data = storage.load_data()
+  local days_in_nvim = data.date
+
+  for i = 1, #days_in_nvim do
+  end
 end
 
 return M
