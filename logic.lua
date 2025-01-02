@@ -32,7 +32,7 @@ end
 
 local function add_xp_for_lines_written(lines)
   print 'adding xp for lines'
-  local xp = math.ceil(lines / 10)
+  local xp = math.ceil(tonumber(lines) / 10)
 
   M.add_xp(xp)
 end
@@ -119,9 +119,10 @@ function M.track_lines()
     return
   end
 
+  local total_lines = 0
   for added, file in string.gmatch(result, '(%d+)%s+%d+%s+(%S+)') do
     local lines_added = tonumber(added)
-    add_xp_for_lines_written(tonumber(added))
+    total_lines = total_lines + lines_added
     local extension = file:match '^.+%.([a-zA-Z0-9]+)$' or 'unknown'
     local language = utils.get_file_language(extension) or 'Unknown'
 
@@ -133,6 +134,8 @@ function M.track_lines()
   table.insert(data.commit_hashes, new_commit_hash)
 
   storage.save_data(data)
+
+  add_xp_for_lines_written(tonumber(total_lines))
 end
 
 return M
