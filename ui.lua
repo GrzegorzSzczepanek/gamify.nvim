@@ -2,18 +2,23 @@ local M = {}
 local logic = require 'gamify.logic'
 local storage = require 'gamify.storage'
 local utils = require 'gamify.utils'
-local config = require 'gamify.config'
 
-function M.show_status_window()
+function M.show_status_window(all_achievements_len)
   local buffer = vim.api.nvim_create_buf(false, true)
 
   local data = logic.get_data()
-  local all_achievements_len = utils.get_table_length(config.all_achievements)
   local user_achievements_len = utils.get_table_length(data.achievements)
   local lines = {
+    '   ____                 _  __       ',
+    '  / ___| __ _ _ __ ___ (_)/ _|_   _ ',
+    " | |  _ / _` | '_ ` _ \\| | |_| | | |",
+    ' | |_| | (_| | | | | | | |  _| |_| |',
+    '  \\____|\\__,_|_| |_| |_|_|_|  \\__, |',
+    '                              |___/ ',
     '🎮 Gamify.nvim Status 🎮',
     '',
     'XP: ' .. data.xp,
+    'Level: ' .. data.level,
     'Achievements: ' .. user_achievements_len .. '/' .. all_achievements_len,
     'Total lines written: ' .. data.lines_written,
     'Total errors fixed: ' .. data.errors_fixed,

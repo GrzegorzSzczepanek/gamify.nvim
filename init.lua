@@ -42,7 +42,7 @@ function M.init()
   end
 
   vim.api.nvim_create_user_command('Gamify', function()
-    ui.show_status_window()
+    ui.show_status_window(achievements.get_achievements_table_length())
   end, {})
 
   vim.api.nvim_create_user_command('LangStats', function()
@@ -53,11 +53,11 @@ function M.init()
     ui.show_achievements()
   end, {})
 
-  vim.api.nvim_create_autocmd('BufReadPost', {
-    callback = function()
-      logic.add_xp(5)
-    end,
-  })
+  -- vim.api.nvim_create_autocmd('BufReadPost', {
+  --   callback = function()
+  --     logic.add_xp(5)
+  --   end,
+  -- })
 
   vim.api.nvim_create_autocmd('BufWritePost', {
     pattern = '*',

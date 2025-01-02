@@ -85,7 +85,7 @@ local achievement_definitions = {
   {
     name = 'Hundred lines',
     description = 'Write 100 lines of code',
-    xp = 150,
+    xp = 100,
     check = function()
       return check_lines(100)
     end,
@@ -173,10 +173,21 @@ local achievement_definitions = {
     description = 'Code continuously for at least 6 hours',
     xp = 1800,
     check = function()
-      local start_time = os.time(storage.get_last_day()) or os.time()
-      local current_time_str = os.date '%Y-%m-%d %H:%M:%S'
-      local time_diff = utils.check_hour_difference(current_time_str, os.date('%Y-%m-%d %H:%M:%S', start_time))
-      return time_diff >= 6
+      local last_day = storage.get_last_day()
+      if not last_day then
+        return false
+      end
+
+      local last_day_table = utils.parse_time(last_day)
+      if not last_day_table then
+        return false
+      end
+
+      local start_time = os.time(last_day_table)
+      local current_time = os.time()
+      local time_diff = os.difftime(current_time, start_time)
+
+      return (time_diff / 3600) >= 6
     end,
   },
 
@@ -206,6 +217,10 @@ local achievement_definitions = {
   },
 }
 
+function M.get_achievements_table_length()
+  return utils.get_table_length(achievement_definitions)
+end
+
 function M.check_all_achievements()
   local data = storage.load_data()
 
@@ -214,10 +229,7 @@ function M.check_all_achievements()
     local meets_requirement = achievement.check()
 
     if meets_requirement and not already_unlocked then
-      data.achievements[achievement.name] = achievement.description
-      logic.add_xp(achievement.xp)
-      storage.save_data(data)
-
+      logic.add_xp(achievement.xp, achievement)
       ui.show_achievement_popup(achievement.name)
     end
   end
