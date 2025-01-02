@@ -236,24 +236,27 @@ function M.check_all_achievements()
 end
 
 function M.track_error_fixes()
+  local previous_error_count = 0
+
   vim.api.nvim_create_autocmd({ 'TextChanged', 'BufWritePost' }, {
     callback = function()
       local diagnostics = vim.diagnostic.get(0)
-      local has_errors = false
+      local current_error_count = 0
 
       for _, diag in ipairs(diagnostics) do
         if diag.severity == vim.diagnostic.severity.ERROR then
-          has_errors = true
-          break
+          current_error_count = current_error_count + 1
         end
       end
 
-      if not has_errors then
+      if current_error_count < previous_error_count then
+        local resolved_errors = previous_error_count - current_error_count
         local data = storage.load_data()
-        data.errors_fixed = (data.errors_fixed or 0) + 1
+        data.errors_fixed = (data.errors_fixed or 0) + resolved_errors
         storage.save_data(data)
-        M.check_all_achievements()
       end
+
+      previous_error_count = current_error_count
     end,
   })
 end

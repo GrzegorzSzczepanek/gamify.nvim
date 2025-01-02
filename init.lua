@@ -64,6 +64,7 @@ function M.init()
     callback = function()
       ui.random_luck_popup()
       logic.track_lines()
+      achievements.track_error_fixes()
       utils.calculate_all_lines_written()
       achievements.check_all_achievements()
     end,
