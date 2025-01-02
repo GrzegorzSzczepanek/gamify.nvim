@@ -1,27 +1,56 @@
--- String return statements are just placeholders for now until I find some satisfying way of showing info
-
 local M = {}
 local storage = require 'gamify.storage'
 local config = require 'gamify.config'
 local utils = require 'gamify.utils'
 
-local user_data = storage.load_data()
+-- A lower exponent B means it takes fewer XP to reach higher levels;
+-- a smaller multiplier A also slows down level progression.
+local A = 0.004
+local B = 1.05
 
-function M.add_xp(amount)
-  user_data.xp = (user_data.xp or 0) + amount
-  storage.save_data(user_data)
+function M.add_xp(amount, achievement)
+  print('add_xp called with amount:', amount)
+  local data = storage.load_data()
+
+  if achievement then
+    data.achievements[achievement.name] = achievement.description
+  end
+
+  data.xp = (data.xp or 0) + amount
+
+  local old_level = data.level or 1
+  local new_level = math.floor(1 + A * (data.xp ^ B))
+
+  if new_level > old_level then
+    data.level = new_level
+    print('Leveled up to:', new_level)
+  end
+
+  storage.save_data(data)
+  print('XP after saving:', data.xp)
+end
+
+local function add_xp_for_lines_written(lines)
+  print 'adding xp for lines'
+  local xp = math.ceil(lines / 10)
+
+  M.add_xp(xp)
 end
 
 function M.add_achievement(achievement)
-  if not vim.tbl_contains(user_data.achievements, achievement) then
-    table.insert(user_data.achievements, achievement)
-    storage.save_data(user_data)
+  local data = storage.load_data()
+
+  if not vim.tbl_contains(data.achievements, achievement) then
+    table.insert(data.achievements, achievement)
+    storage.save_data(data)
   end
 end
 
 function M.set_goal(description, deadline)
-  table.insert(user_data.goals, { description = description, deadline = deadline })
-  storage.save_data(user_data)
+  local data = storage.load_data()
+
+  table.insert(data.goals, { description = description, deadline = deadline })
+  storage.save_data(data)
 end
 
 function M.set_time_entry()
@@ -31,7 +60,9 @@ function M.set_time_entry()
 end
 
 function M.get_data()
-  return user_data
+  local data = storage.load_data()
+
+  return data
 end
 
 -- time measured in seconds from last log to closing nvim
@@ -56,13 +87,13 @@ function M.random_luck()
   return nil
 end
 
-function M.track_lines_on_save()
+function M.track_lines()
   local data = storage.load_data()
   data.commit_hashes = data.commit_hashes or {}
 
   local new_commit_handle = io.popen 'git rev-parse HEAD'
   if not new_commit_handle then
-    print 'Failed to get the latest commit hash.'
+    -- print 'Failed to get the latest commit hash.'
     return
   end
 
@@ -70,13 +101,13 @@ function M.track_lines_on_save()
   new_commit_handle:close()
 
   if vim.tbl_contains(data.commit_hashes, new_commit_hash) then
-    print 'Commit already processed. Skipping...'
+    -- print 'Commit already processed. Skipping...'
     return
   end
 
   local handle = io.popen 'git diff --numstat HEAD~1 HEAD'
   if not handle then
-    print 'Failed to execute git diff.'
+    -- print 'Failed to execute git diff.'
     return
   end
 
@@ -84,12 +115,13 @@ function M.track_lines_on_save()
   handle:close()
 
   if not result or result == '' then
-    print 'No changes detected in git diff.'
+    -- print 'No changes detected in git diff.'
     return
   end
 
   for added, file in string.gmatch(result, '(%d+)%s+%d+%s+(%S+)') do
     local lines_added = tonumber(added)
+    add_xp_for_lines_written(tonumber(added))
     local extension = file:match '^.+%.([a-zA-Z0-9]+)$' or 'unknown'
     local language = utils.get_file_language(extension) or 'Unknown'
 
