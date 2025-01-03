@@ -184,6 +184,22 @@ local achievement_definitions = {
       return check_fixed_errors_in_a_day(100)
     end,
   },
+  {
+    name = 'Vim enjoyer',
+    description = 'Spend at least 100 hours in nvim',
+    xp = 4500,
+    check = function()
+      return storage.load_data().total_time >= 100.0
+    end,
+  },
+  {
+    name = 'Get a Life!',
+    description = 'Spend at least 200 hours in nvim',
+    xp = 9000,
+    check = function()
+      return storage.load_data().total_time >= 200.0
+    end,
+  },
 }
 
 function M.get_achievements_table_length()
@@ -192,6 +208,7 @@ end
 
 function M.check_all_achievements()
   local data = storage.load_data()
+  local delay = 0
 
   for _, achievement in ipairs(achievement_definitions) do
     local already_unlocked = data.achievements[achievement.name] ~= nil
@@ -199,7 +216,12 @@ function M.check_all_achievements()
 
     if meets_requirement and not already_unlocked then
       logic.add_xp(achievement.xp, achievement)
-      ui.show_achievement_popup(achievement.name)
+
+      vim.defer_fn(function()
+        ui.show_achievement_popup(achievement.name)
+      end, delay)
+
+      delay = delay + 3000
     end
   end
 end
