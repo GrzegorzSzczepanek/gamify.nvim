@@ -6,7 +6,11 @@ local utils = require 'gamify.utils'
 function M.show_status_window(all_achievements_len)
   local buffer = vim.api.nvim_create_buf(false, true)
 
-  local data = logic.get_data()
+  local data = storage.load_data()
+  local total_time = data.total_time or 0
+  local hours = math.floor(total_time)
+  local minutes = math.floor((total_time - hours) * 60)
+  local message = string.format('You have spent %dhours and %dminutes in Neovim!', hours, minutes)
   local user_achievements_len = utils.get_table_length(data.achievements)
   local lines = {
     '   ____                 _  __       ',
@@ -22,6 +26,7 @@ function M.show_status_window(all_achievements_len)
     'Achievements: ' .. user_achievements_len .. '/' .. all_achievements_len,
     'Total lines written: ' .. data.lines_written,
     'Total errors fixed: ' .. data.errors_fixed,
+    message,
     "You're on " .. data.day_streak .. ' day streak.',
   }
 

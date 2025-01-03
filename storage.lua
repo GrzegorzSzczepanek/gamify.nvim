@@ -19,7 +19,7 @@ function M.load_data()
       code_mornings = 0,
       lines_written_in_specified_langs = {},
       errors_fixed = 0,
-      day_streak = 0,
+      day_streak = 1,
       commit_hashes = {},
     }
   end
@@ -43,7 +43,7 @@ function M.load_data()
     code_mornings = 0,
     lines_written_in_specified_langs = {},
     errors_fixed = 0,
-    day_streak = 0,
+    day_streak = 1,
     commit_hashes = {},
   }
 
@@ -94,7 +94,7 @@ end
 
 -- it returns boolean so we can know if we should add exp to user for logging
 function M.log_new_day()
-  local current_date = os.date '%Y-%m-%d' -- Current date only
+  local current_date = os.date '%Y-%m-%d'
   local last_day_entry = M.get_last_day()
 
   -- Extract date part from last_entry if present

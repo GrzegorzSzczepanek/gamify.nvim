@@ -1,6 +1,5 @@
 local M = {}
 local storage = require 'gamify.storage'
-local config = require 'gamify.config'
 local utils = require 'gamify.utils'
 
 -- A lower exponent B means it takes fewer XP to reach higher levels;
@@ -65,23 +64,29 @@ function M.get_data()
   return data
 end
 
--- time measured in seconds from last log to closing nvim
 -- used only when nvim is closed
 function M.add_total_time_spent()
-  local last_log = M.get_data().last_time_entry
-  local current_time = os.date '%Y%m%d %H:%M:%S'
-
-  local time_diff = utils.check_hour_difference(current_time, last_log)
   local data = storage.load_data()
-  data.total_time = data.total_time + time_diff
-  storage.save_data(data)
+  local last_log = data.last_entry
+  local current_time = os.date '%Y-%m-%d %H:%M:%S'
+
+  print('Last log:', last_log)
+  print('Current time:', current_time)
+
+  local time_diff = utils.check_hour_difference(last_log, current_time)
+  print('Time difference (hours):', time_diff)
+
+  if time_diff > 0 then
+    data.total_time = (data.total_time or 0) + time_diff
+    storage.save_data(data)
+  end
 end
 
 function M.random_luck()
   if math.random(50) == 3 then
     local xp_amount = 50
     M.add_xp(xp_amount)
-    local today_compliment = config.compliments[math.random(#config.compliments)]
+    local today_compliment = utils.compliments[math.random(#utils.compliments)]
     return today_compliment
   end
   return nil

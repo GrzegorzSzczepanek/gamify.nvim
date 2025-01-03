@@ -2,9 +2,43 @@ local M = {}
 
 local storage = require 'gamify.storage'
 
+M.compliments = {
+  'You’re doing amazing, keep it up! 🌟',
+  'Today is your day to shine! ✨',
+  "Small progress is still progress. You're awesome! 💪",
+  'Remember, the journey is just as important as the destination. 🚀',
+  'Every keystroke is a step toward greatness! 🖋️',
+  'Your focus and dedication are inspiring! 👏',
+  'Take a deep breath—you’re doing better than you think. 🌈',
+  'Coding or not, you’re a star! ⭐',
+  'You’re on fire today! 🔥',
+  'Your determination is unmatched. Keep going! 🏆',
+  'Somewhere out there, someone is impressed by your dedication. ✨',
+  "You're building something amazing, one line at a time! 🛠️",
+  'No matter the challenge, you’re capable of overcoming it. 💪',
+  'Even the greatest started with small steps. You’ve got this! 🌱',
+  'If progress was easy, everyone would do it. Keep grinding! 🛠️',
+  'You’ve come so far—don’t stop now! 🚶',
+  'Every day you improve just by showing up. 🌟',
+  'You bring creativity and passion to everything you do. 💡',
+  'Your work makes a difference, even if you don’t see it yet. 🌍',
+  'It’s okay to take breaks—you’re still amazing! 🏖️',
+  'Mistakes are proof you’re learning. Keep going! 🔄',
+  'You’re capable of more than you know. Trust yourself! 🤝',
+  'The hardest part is starting, and you’ve already done that. 🎉',
+  'You’re not just writing code—you’re creating something unique! 🌟',
+  'Believe in your abilities. The best is yet to come. 🌟',
+}
+
 function M.parse_time(time_string)
+  if not time_string then
+    return nil
+  end
   local pattern = '(%d+)%-(%d+)%-(%d+) (%d+):(%d+):(%d+)'
   local year, month, day, hour, min, sec = time_string:match(pattern)
+  if not year or not month or not day or not hour or not min or not sec then
+    return nil
+  end
   return { year = year, month = month, day = day, hour = hour, min = min, sec = sec }
 end
 
@@ -13,13 +47,36 @@ function M.check_hour_difference(time1, time2)
   local first_time = M.parse_time(time1)
   local second_time = M.parse_time(time2)
 
+  if not first_time or not second_time then
+    return 0
+  end
+
   local first_time_seconds = os.time(first_time)
   local second_time_seconds = os.time(second_time)
 
-  local diff_in_seconds = os.difftime(second_time_seconds, first_time_seconds)
-  local diff_in_hours = diff_in_seconds / 3600
+  if not first_time_seconds or not second_time_seconds then
+    return 0
+  end
 
-  return diff_in_hours
+  local diff_in_seconds = os.difftime(second_time_seconds, first_time_seconds)
+  return diff_in_seconds / 3600
+end
+
+function M.check_streak(days)
+  local data = storage.load_data()
+  if not data or type(data.date) ~= 'table' or #data.date < days then
+    return false
+  end
+
+  local current_time = os.time()
+  for i = 0, days - 1 do
+    local expected_date = os.date('%Y-%m-%d', current_time - (i * 86000))
+    if data.date[#data.date - days + 1 + i] ~= expected_date then
+      return false
+    end
+  end
+
+  return true
 end
 
 function M.get_table_length(t)

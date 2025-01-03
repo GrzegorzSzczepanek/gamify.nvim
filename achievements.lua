@@ -5,23 +5,6 @@ local logic = require 'gamify.logic'
 local utils = require 'gamify.utils'
 local ui = require 'gamify.ui'
 
-local function check_streak(days)
-  local data = storage.load_data()
-  if not data or type(data.date) ~= 'table' or #data.date < days then
-    return false
-  end
-
-  local current_time = os.time()
-  for i = 0, days - 1 do
-    local expected_date = os.date('%Y-%m-%d', current_time - (i * 86000))
-    if data.date[#data.date - days + 1 + i] ~= expected_date then
-      return false
-    end
-  end
-
-  return true
-end
-
 local function check_lines(lines_needed)
   local data = storage.load_data()
   return (data.lines_written or 0) >= lines_needed
@@ -62,7 +45,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 7 consecutive days',
     xp = 500,
     check = function()
-      return check_streak(7)
+      return utils.check_streak(7)
     end,
   },
   {
@@ -70,7 +53,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 14 consecutive days',
     xp = 1500,
     check = function()
-      return check_streak(14)
+      return utils.check_streak(14)
     end,
   },
   {
@@ -78,7 +61,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 30 consecutive days',
     xp = 4000,
     check = function()
-      return check_streak(30)
+      return utils.check_streak(30)
     end,
   },
 
@@ -172,7 +155,9 @@ local achievement_definitions = {
     name = 'Marathoner',
     description = 'Code continuously for at least 6 hours',
     xp = 1800,
-    check = utils.calculate_time_difference() >= 6,
+    check = function()
+      return utils.calculate_time_difference() >= 6
+    end,
   },
 
   {

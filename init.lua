@@ -23,8 +23,16 @@ local function ensure_data_file()
         goals = {},
         date = {},
         lines_written = 0,
+        last_entry = os.date '%Y-%m-%d %H:%M:%S',
         total_time = 0,
-        lvl = 0,
+        level = 0,
+        time_spent = 0,
+        code_nights = 0,
+        code_mornings = 0,
+        lines_written_in_specified_langs = {},
+        errors_fixed = 0,
+        day_streak = 1,
+        commit_hashes = {},
       })
       file:close()
     end
@@ -32,15 +40,28 @@ local function ensure_data_file()
 end
 
 function M.init()
-  ensure_data_file()
+  vim.api.nvim_create_autocmd('VimEnter', {
+    callback = function()
+      ensure_data_file()
 
-  if storage.log_new_day() then
-    logic.add_xp(10)
-    ui.random_luck_popup()
-    utils.calculate_all_lines_written()
-    achievements.check_all_achievements()
-  end
+      if storage.log_new_day() then
+        logic.add_xp(10)
+        ui.random_luck_popup()
+        utils.calculate_all_lines_written()
+        achievements.check_all_achievements()
+      end
+      local data = storage.load_data()
 
+      if utils.check_streak(data.day_streak + 1) then
+        print('day streak: ' .. data.day_streak)
+        data.day_streak = data.day_streak + 1
+        storage.save_data(data)
+      end
+
+      data.last_entry = os.date '%Y-%m-%d %H:%M:%S'
+      storage.save_data(data)
+    end,
+  })
   vim.api.nvim_create_user_command('Gamify', function()
     ui.show_status_window(achievements.get_achievements_table_length())
   end, {})
@@ -70,12 +91,8 @@ function M.init()
     end,
   })
 
-  -- clear last entry after closing nvim
   vim.api.nvim_create_autocmd('VimLeavePre', {
     callback = function()
-      local data = storage.load_data()
-      data.last_time_entry = nil
-      storage.save_data(data)
       logic.add_total_time_spent()
     end,
   })
