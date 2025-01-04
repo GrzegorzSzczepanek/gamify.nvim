@@ -96,6 +96,12 @@ function M.track_lines()
   local data = storage.load_data()
   data.commit_hashes = data.commit_hashes or {}
 
+  local is_git_repo = vim.fn.system('git rev-parse --is-inside-work-tree'):match 'true'
+  if not is_git_repo then
+    -- print 'Not in git repository. tracking skipped.'
+    return
+  end
+
   local new_commit_handle = io.popen 'git rev-parse HEAD'
   if not new_commit_handle then
     -- print 'Failed to get the latest commit hash.'
