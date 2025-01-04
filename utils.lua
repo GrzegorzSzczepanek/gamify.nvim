@@ -62,21 +62,39 @@ function M.check_hour_difference(time1, time2)
   return diff_in_seconds / 3600
 end
 
-function M.check_streak(days)
+function M.check_streak()
   local data = storage.load_data()
-  if not data or type(data.date) ~= 'table' or #data.date < days then
-    return false
+  if not data or type(data.date) ~= 'table' or #data.date == 0 then
+    return 0
   end
 
-  local current_time = os.time()
-  for i = 0, days - 1 do
-    local expected_date = os.date('%Y-%m-%d', current_time - (i * 86000))
-    if data.date[#data.date - days + 1 + i] ~= expected_date then
-      return false
+  local dates = data.date
+  local streak = 1
+  local one_day_seconds = 86400
+
+  -- convert dates to seconds since epoch
+  local timestamps = {}
+  for _, date in ipairs(dates) do
+    local year, month, day = date:match '(%d+)-(%d+)-(%d+)'
+    local time = os.time { year = year, month = month, day = day, hour = 0, min = 0, sec = 0 }
+    table.insert(timestamps, time)
+  end
+
+  table.sort(timestamps, function(a, b)
+    return a > b
+  end)
+
+  for i = 2, #timestamps do
+    local difference = os.difftime(timestamps[i - 1], timestamps[i])
+    if difference <= one_day_seconds then
+      streak = streak + 1
+    else
+      break
     end
   end
 
-  return true
+  data.day_streak = streak
+  storage.save_data(data)
 end
 
 function M.get_table_length(t)

@@ -54,7 +54,7 @@ end
 
 function M.set_time_entry()
   local data = storage.load_data()
-  data.last_time_entry = os.date '%Y-%m-%d %H:%M:%S'
+  data.last_time_entry = storage.last_entry_format
   storage.save_data(data)
 end
 
@@ -68,7 +68,7 @@ end
 function M.add_total_time_spent()
   local data = storage.load_data()
   local last_log = data.last_entry
-  local current_time = os.date '%Y-%m-%d %H:%M:%S'
+  local current_time = storage.last_entry_format
 
   print('Last log:', last_log)
   print('Current time:', current_time)

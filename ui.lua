@@ -3,53 +3,57 @@ local logic = require 'gamify.logic'
 local storage = require 'gamify.storage'
 local utils = require 'gamify.utils'
 
+local function center_text(text, width)
+  local padding = math.floor((width - #text) / 2)
+  return string.rep(' ', math.max(padding, 0)) .. text
+end
+
 function M.show_status_window(all_achievements_len)
   local buffer = vim.api.nvim_create_buf(false, true)
 
   local data = storage.load_data()
   local total_time = data.total_time or 0
-  local hours = math.floor(total_time)
-  local minutes = math.floor((total_time - hours) * 60)
-  local message = string.format('You have spent %dhours and %dminutes in Neovim!', hours, minutes)
+
+  local days = math.floor(total_time / 24)
+  local hours = math.floor(total_time % 24)
+  local minutes = math.floor((total_time - math.floor(total_time)) * 60)
+  local time_message = string.format('You have spent %d days, %d hours, and %d minutes in Neovim!', days, hours, minutes)
+
   local user_achievements_len = utils.get_table_length(data.achievements)
+
+  local ui_width = 70
+
   local lines = {
-    '   ____                 _  __       ',
-    '  / ___| __ _ _ __ ___ (_)/ _|_   _ ',
-    " | |  _ / _` | '_ ` _ \\| | |_| | | |",
-    ' | |_| | (_| | | | | | | |  _| |_| |',
-    '  \\____|\\__,_|_| |_| |_|_|_|  \\__, |',
-    '                              |___/ ',
-    '🎮 Gamify.nvim Status 🎮',
+    center_text('   ____                 _  __       ', ui_width),
+    center_text('  / ___| __ _ _ __ ___ (_)/ _|_   _ ', ui_width),
+    center_text(" | |  _ / _` | '_ ` _ \\| | |_| | | |", ui_width),
+    center_text(' | |_| | (_| | | | | | | |  _| |_| |', ui_width),
+    center_text('  \\____|\\__,_|_| |_| |_|_|_|  \\__, |', ui_width),
+    center_text('                              |___/ ', ui_width),
     '',
-    'XP: ' .. data.xp,
-    'Level: ' .. data.level,
-    'Achievements: ' .. user_achievements_len .. '/' .. all_achievements_len,
-    'Total lines written: ' .. data.lines_written,
-    'Total errors fixed: ' .. data.errors_fixed,
-    message,
-    "You're on " .. data.day_streak .. ' day streak.',
+    center_text('🎮 Gamify.nvim Status 🎮', ui_width),
+    '',
+    center_text('XP: ' .. data.xp, ui_width),
+    center_text('Level: ' .. data.level, ui_width),
+    center_text('Achievements: ' .. user_achievements_len .. '/' .. all_achievements_len, ui_width),
+    center_text('Total lines written: ' .. data.lines_written, ui_width),
+    center_text('Total errors fixed: ' .. data.errors_fixed, ui_width),
+    center_text('You made : ' .. #data.commit_hashes .. ' commits to git!', ui_width),
+    '',
+    center_text(time_message, ui_width),
+    '',
+    center_text("You're on a " .. data.day_streak .. ' day streak.', ui_width),
+    '',
+    center_text('Press esc key to close.', ui_width),
   }
-
-  table.insert(lines, '')
-  table.insert(lines, 'Goals:')
-  if #data.goals > 0 then
-    for _, goal in ipairs(data.goals) do
-      table.insert(lines, '- ' .. goal.description .. ' (Deadline: ' .. goal.deadline .. ')')
-    end
-  else
-    table.insert(lines, 'No goals set.')
-  end
-
-  table.insert(lines, '')
-  table.insert(lines, 'Press esc key to close.')
 
   local opts = {
     style = 'minimal',
     relative = 'editor',
-    width = 50,
+    width = ui_width,
     height = #lines + 2,
     row = math.floor((vim.o.lines - (#lines + 2)) / 2),
-    col = math.floor((vim.o.columns - 50) / 2),
+    col = math.floor((vim.o.columns - ui_width) / 2),
     border = 'rounded',
   }
 
@@ -133,13 +137,12 @@ function M.show_languages_ui()
     end
   end
 
-  -- sort the array by the number of lines in descending order
   table.sort(lang_lines, function(a, b)
     return a.lines > b.lines
   end)
 
-  local ui_lines = { '📊 Language Stats 📊', '', 'Most Used Languages:' }
-  local max_bar_length = 50
+  local ui_width = 100
+  local max_bar_length = ui_width - 35
   local max_lines = lang_lines[1] and lang_lines[1].lines or 1
 
   local max_lang_length = 0
@@ -147,18 +150,24 @@ function M.show_languages_ui()
     max_lang_length = math.max(max_lang_length, #lang_data.lang)
   end
 
+  local ui_lines = {
+    center_text('📊 Most Used Languages 📊', ui_width),
+    '',
+  }
+
   for _, lang_data in ipairs(lang_lines) do
     local bar_length = math.floor((lang_data.lines / max_lines) * max_bar_length)
-    local bar = string.rep('█', bar_length) .. string.rep(' ', max_bar_length - bar_length)
-    table.insert(ui_lines, string.format('%-' .. max_lang_length .. 's | %s ~%d lines', lang_data.lang, bar, lang_data.lines))
+    local bar = string.rep('█', bar_length)
+    local line_text = string.format('%-' .. max_lang_length .. 's | %s ~ %d lines', lang_data.lang, bar, lang_data.lines)
+    table.insert(ui_lines, line_text)
   end
 
-  if #ui_lines == 3 then
-    table.insert(ui_lines, 'No data available.')
+  if #lang_lines == 0 then
+    table.insert(ui_lines, center_text('No data available.', ui_width))
   end
 
   table.insert(ui_lines, '')
-  table.insert(ui_lines, 'Press esc key to close.')
+  table.insert(ui_lines, center_text('Press esc key to close.', ui_width))
 
   local buffer = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, ui_lines)
@@ -166,10 +175,10 @@ function M.show_languages_ui()
   local opts = {
     style = 'minimal',
     relative = 'editor',
-    width = 100,
+    width = ui_width,
     height = #ui_lines + 2,
     row = math.floor((vim.o.lines - (#ui_lines + 2)) / 2),
-    col = math.floor((vim.o.columns - 100) / 2),
+    col = math.floor((vim.o.columns - ui_width) / 2),
     border = 'rounded',
   }
 
@@ -413,7 +422,7 @@ function M.show_falling_confetti(count, duration_ms)
   timer:start(0, 80, vim.schedule_wrap(animate))
 end
 
-function M.show_achievement_popup(name)
+function M.show_special_popup(name)
   local data = require('gamify.storage').load_data()
   local description = data.achievements[name]
   if description then

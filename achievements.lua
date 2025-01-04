@@ -25,8 +25,8 @@ local function lines_in_languages(num_of_langs, threshold)
 end
 
 local function check_fixed_errors_in_a_day(number_of_errors)
-  local todays_timelog = storage.get_last_log() or os.date '%Y-%m-%d %H:%M:%S'
-  local current_date = os.date '%Y-%m-%d %H:%M:%S'
+  local todays_timelog = storage.get_last_log() or storage.last_entry_format
+  local current_date = storage.last_entry_format
 
   if type(todays_timelog) == 'string' and type(current_date) == 'string' then
     local timelog_date_only = string.sub(todays_timelog, 1, 10)
@@ -45,7 +45,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 7 consecutive days',
     xp = 500,
     check = function()
-      return utils.check_streak(7)
+      return storage.load_data().day_streak >= 7
     end,
   },
   {
@@ -53,7 +53,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 14 consecutive days',
     xp = 1500,
     check = function()
-      return utils.check_streak(14)
+      return storage.load_data().day_streak >= 14
     end,
   },
   {
@@ -61,7 +61,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 30 consecutive days',
     xp = 4000,
     check = function()
-      return utils.check_streak(30)
+      return storage.load_data().day_streak >= 30
     end,
   },
 
@@ -218,7 +218,7 @@ function M.check_all_achievements()
       logic.add_xp(achievement.xp, achievement)
 
       vim.defer_fn(function()
-        ui.show_achievement_popup(achievement.name)
+        ui.show_special_popup(achievement.name)
       end, delay)
 
       delay = delay + 3000

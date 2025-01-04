@@ -1,6 +1,8 @@
 local M = {}
 
 local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
+M.last_entry_format = os.date '%Y-%m-%d %H:%M:%S'
+M.date_format = os.date '%Y-%m-%d'
 
 function M.load_data()
   local file = io.open(data_file, 'r')
@@ -11,7 +13,7 @@ function M.load_data()
       goals = {},
       date = {},
       lines_written = 0,
-      last_entry = os.date '%Y-%m-%d %H:%M:%S',
+      last_entry = M.last_entry_format,
       total_time = 0,
       level = 0,
       time_spent = 0,
@@ -35,7 +37,7 @@ function M.load_data()
     goals = {},
     date = {},
     lines_written = 0,
-    last_entry = os.date '%Y-%m-%d %H:%M:%S',
+    last_entry = M.last_entry_format,
     total_time = 0,
     level = 0,
     time_spent = 0,
@@ -94,7 +96,7 @@ end
 
 -- it returns boolean so we can know if we should add exp to user for logging
 function M.log_new_day()
-  local current_date = os.date '%Y-%m-%d'
+  local current_date = M.date_format
   local last_day_entry = M.get_last_day()
 
   -- Extract date part from last_entry if present
@@ -104,7 +106,7 @@ function M.log_new_day()
   if last_logged_date ~= current_date then
     local data = M.load_data()
     data.date = data.date or {}
-    table.insert(data.date, os.date '%Y-%m-%d')
+    table.insert(data.date, M.date_format)
     M.save_data(data)
     return true
   end

@@ -23,7 +23,7 @@ local function ensure_data_file()
         goals = {},
         date = {},
         lines_written = 0,
-        last_entry = os.date '%Y-%m-%d %H:%M:%S',
+        last_entry = storage.last_entry_format,
         total_time = 0,
         level = 0,
         time_spent = 0,
@@ -48,17 +48,12 @@ function M.init()
         logic.add_xp(10)
         ui.random_luck_popup()
         utils.calculate_all_lines_written()
+        utils.check_streak()
         achievements.check_all_achievements()
       end
+
       local data = storage.load_data()
-
-      if utils.check_streak(data.day_streak + 1) then
-        print('day streak: ' .. data.day_streak)
-        data.day_streak = data.day_streak + 1
-        storage.save_data(data)
-      end
-
-      data.last_entry = os.date '%Y-%m-%d %H:%M:%S'
+      data.last_entry = storage.last_entry_format
       storage.save_data(data)
     end,
   })
