@@ -24,23 +24,21 @@ local function ensure_data_file()
 end
 
 function M.setup()
-  vim.api.nvim_create_autocmd('VimEnter', {
-    callback = function()
-      ensure_data_file()
+  -- M.setup gets called when the plugin gets required by eg. user's package manager
+  ensure_data_file()
 
-      if storage.log_new_day() then
-        logic.add_xp(10)
-        ui.random_luck_popup()
-        utils.calculate_all_lines_written()
-        utils.check_streak()
-        achievements.check_all_achievements()
-      end
+  if storage.log_new_day() then
+    logic.add_xp(10)
+    ui.random_luck_popup()
+    utils.calculate_all_lines_written()
+    utils.check_streak()
+    achievements.check_all_achievements()
+  end
 
-      local data = storage.load_data()
-      data.last_entry = storage.last_entry_format
-      storage.save_data(data)
-    end,
-  })
+  local data = storage.load_data()
+  data.last_entry = storage.last_entry_format
+  storage.save_data(data)
+
   vim.api.nvim_create_user_command('Gamify', function()
     ui.show_status_window(achievements.get_achievements_table_length())
   end, {})
