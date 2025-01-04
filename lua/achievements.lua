@@ -121,7 +121,7 @@ local achievement_definitions = {
 
   {
     name = 'Jack of Many',
-    description = 'Write at least 1000 lines in more than 5 languages',
+    description = 'Write at least 1000 lines in at least 5 languages',
     xp = 2500,
     check = function()
       return lines_in_languages(5, 1000)
@@ -129,7 +129,7 @@ local achievement_definitions = {
   },
   {
     name = 'Polyglot',
-    description = 'Write at least 1000 lines in more than 10 languages',
+    description = 'Write at least 1000 lines in at least 10 languages',
     xp = 5000,
     check = function()
       return lines_in_languages(10, 1000)

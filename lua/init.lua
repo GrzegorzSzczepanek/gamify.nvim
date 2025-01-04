@@ -23,7 +23,7 @@ local function ensure_data_file()
   end
 end
 
-function M.init()
+function M.setup()
   vim.api.nvim_create_autocmd('VimEnter', {
     callback = function()
       ensure_data_file()
@@ -52,12 +52,6 @@ function M.init()
   vim.api.nvim_create_user_command('Achievements', function()
     ui.show_achievements()
   end, {})
-
-  -- vim.api.nvim_create_autocmd('BufReadPost', {
-  --   callback = function()
-  --     logic.add_xp(5)
-  --   end,
-  -- })
 
   vim.api.nvim_create_autocmd('BufWritePost', {
     pattern = '*',
