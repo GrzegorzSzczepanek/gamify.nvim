@@ -1,41 +1,45 @@
 local M = {}
 
 local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
-
--- json structure
--- {
--- xp = int
--- achievements = {}
--- goals = {} -- something like achievements but user sets them themself
--- date = {} -- days user opened nvim in
--- lines_of_code_written_in_nvim = {}
--- lines_in_specified_langs = {c: 123, cpp:4322, python:1243, rust: 123443}
--- last_time_entry date + time -- it's supposed to help with achievements for coding for few consecutive hours
--- total_time_in_nvim = 0 - in hours
--- code_nights = 0 -- times user spent more than 3 hours in editor between 11PM and 4AM
--- code_mornigs = 0 -- times users spent more than 3 hours in editor between 6AM and 11AM
--- }
+M.last_entry_format = os.date '%Y-%m-%d %H:%M:%S'
+M.date_format = os.date '%Y-%m-%d'
+M.data_json_format = {
+  xp = 0,
+  achievements = {},
+  goals = {},
+  date = {},
+  lines_written = 0,
+  last_entry = M.last_entry_format,
+  total_time = 0,
+  level = 0,
+  time_spent = 0,
+  code_nights = 0,
+  code_mornings = 0,
+  lines_written_in_specified_langs = {},
+  errors_fixed = 0,
+  day_streak = 1,
+  commit_hashes = {},
+}
 
 function M.load_data()
   local file = io.open(data_file, 'r')
   if not file then
-    return {
-      xp = 0,
-      achievements = {},
-      goals = {},
-      date = {},
-      lines_written = 0,
-      last_time_entry = nil,
-      total_time = 0,
-      lvl = 0,
-      time_spent = 0,
-      code_nights = 0,
-      code_mornings = 0,
-    } -- Default data
+    return M.data_json_format
   end
+
   local content = file:read '*a'
   file:close()
-  return vim.fn.json_decode(content)
+
+  local data = vim.fn.json_decode(content)
+
+  local defaults = M.data_json_format
+  for k, v in pairs(defaults) do
+    if data[k] == nil then
+      data[k] = v
+    end
+  end
+
+  return data
 end
 
 function M.save_data(data)
@@ -64,28 +68,29 @@ function M.validate_time_entry(entry)
   return false
 end
 
-function M.get_last_entry()
+function M.get_last_log()
   local data = M.load_data()
-  local entry = data.last_time_entry
+  local entry = data.last_entry or os.date '%Y-%m-%d %H:%M:%S'
 
   if entry and M.validate_time_entry(entry) then
     return entry
   end
+  return os.date '%Y-%m-%d %H:%M:%S'
 end
 
 -- it returns boolean so we can know if we should add exp to user for logging
 function M.log_new_day()
-  local current_date = os.date '%Y-%m-%d' -- Current date only
+  local current_date = M.date_format
   local last_day_entry = M.get_last_day()
 
-  -- Extract date part from last_time_entry if present
+  -- Extract date part from last_entry if present
   local last_logged_date = last_day_entry and last_day_entry:match '%d%d%d%d%-%d%d%-%d%d' or nil
 
   -- Compare only the date part
   if last_logged_date ~= current_date then
     local data = M.load_data()
     data.date = data.date or {}
-    table.insert(data.date, os.date '%Y-%m-%d %H:%M:%S')
+    table.insert(data.date, M.date_format)
     M.save_data(data)
     return true
   end
