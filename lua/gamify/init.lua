@@ -73,6 +73,6 @@ function M.setup()
   })
 end
 
-M.init()
+M.setup()
 
 return M
