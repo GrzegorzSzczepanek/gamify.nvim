@@ -5,23 +5,6 @@ local logic = require 'gamify.logic'
 local utils = require 'gamify.utils'
 local ui = require 'gamify.ui'
 
-local function check_streak(days)
-  local data = storage.load_data()
-  if not data or type(data.date) ~= 'table' or #data.date < days then
-    return false
-  end
-
-  local current_time = os.time()
-  for i = 0, days - 1 do
-    local expected_date = os.date('%Y-%m_%d', current_time - (i * 86000))
-    if data.date[#data.date - days + 1 + i] ~= expected_date then
-      return false
-    end
-  end
-
-  return true
-end
-
 local function check_lines(lines_needed)
   local data = storage.load_data()
   return (data.lines_written or 0) >= lines_needed
@@ -42,8 +25,8 @@ local function lines_in_languages(num_of_langs, threshold)
 end
 
 local function check_fixed_errors_in_a_day(number_of_errors)
-  local todays_timelog = storage.get_last_log() or os.date '%Y-%m-%d %H:%M:%S'
-  local current_date = os.date '%Y-%m-%d %H:%M:%S'
+  local todays_timelog = storage.get_last_log() or storage.last_entry_format
+  local current_date = storage.last_entry_format
 
   if type(todays_timelog) == 'string' and type(current_date) == 'string' then
     local timelog_date_only = string.sub(todays_timelog, 1, 10)
@@ -62,7 +45,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 7 consecutive days',
     xp = 500,
     check = function()
-      return check_streak(7)
+      return storage.load_data().day_streak >= 7
     end,
   },
   {
@@ -70,7 +53,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 14 consecutive days',
     xp = 1500,
     check = function()
-      return check_streak(14)
+      return storage.load_data().day_streak >= 14
     end,
   },
   {
@@ -78,7 +61,7 @@ local achievement_definitions = {
     description = 'Open Neovim every day for 30 consecutive days',
     xp = 4000,
     check = function()
-      return check_streak(30)
+      return storage.load_data().day_streak >= 30
     end,
   },
 
@@ -173,21 +156,7 @@ local achievement_definitions = {
     description = 'Code continuously for at least 6 hours',
     xp = 1800,
     check = function()
-      local last_day = storage.get_last_day()
-      if not last_day then
-        return false
-      end
-
-      local last_day_table = utils.parse_time(last_day)
-      if not last_day_table then
-        return false
-      end
-
-      local start_time = os.time(last_day_table)
-      local current_time = os.time()
-      local time_diff = os.difftime(current_time, start_time)
-
-      return (time_diff / 3600) >= 6
+      return utils.calculate_time_difference() >= 6
     end,
   },
 
@@ -215,6 +184,22 @@ local achievement_definitions = {
       return check_fixed_errors_in_a_day(100)
     end,
   },
+  {
+    name = 'Vim enjoyer',
+    description = 'Spend at least 100 hours in nvim',
+    xp = 4500,
+    check = function()
+      return storage.load_data().total_time >= 100.0
+    end,
+  },
+  {
+    name = 'Get a Life!',
+    description = 'Spend at least 200 hours in nvim',
+    xp = 9000,
+    check = function()
+      return storage.load_data().total_time >= 200.0
+    end,
+  },
 }
 
 function M.get_achievements_table_length()
@@ -223,6 +208,7 @@ end
 
 function M.check_all_achievements()
   local data = storage.load_data()
+  local delay = 0
 
   for _, achievement in ipairs(achievement_definitions) do
     local already_unlocked = data.achievements[achievement.name] ~= nil
@@ -230,7 +216,12 @@ function M.check_all_achievements()
 
     if meets_requirement and not already_unlocked then
       logic.add_xp(achievement.xp, achievement)
-      ui.show_achievement_popup(achievement.name)
+
+      vim.defer_fn(function()
+        ui.show_special_popup(achievement.name)
+      end, delay)
+
+      delay = delay + 3000
     end
   end
 end

@@ -1,6 +1,8 @@
 local M = {}
 
 local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
+M.last_entry_format = os.date '%Y-%m-%d %H:%M:%S'
+M.date_format = os.date '%Y-%m-%d'
 
 function M.load_data()
   local file = io.open(data_file, 'r')
@@ -11,7 +13,7 @@ function M.load_data()
       goals = {},
       date = {},
       lines_written = 0,
-      last_time_entry = os.date '%Y-%m-%d %H:%M:%S',
+      last_entry = M.last_entry_format,
       total_time = 0,
       level = 0,
       time_spent = 0,
@@ -19,7 +21,7 @@ function M.load_data()
       code_mornings = 0,
       lines_written_in_specified_langs = {},
       errors_fixed = 0,
-      day_streak = 0,
+      day_streak = 1,
       commit_hashes = {},
     }
   end
@@ -35,7 +37,7 @@ function M.load_data()
     goals = {},
     date = {},
     lines_written = 0,
-    last_time_entry = os.date '%Y-%m-%d %H:%M:%S',
+    last_entry = M.last_entry_format,
     total_time = 0,
     level = 0,
     time_spent = 0,
@@ -43,7 +45,7 @@ function M.load_data()
     code_mornings = 0,
     lines_written_in_specified_langs = {},
     errors_fixed = 0,
-    day_streak = 0,
+    day_streak = 1,
     commit_hashes = {},
   }
 
@@ -84,27 +86,27 @@ end
 
 function M.get_last_log()
   local data = M.load_data()
-  local entry = data.last_time_entry
+  local entry = data.last_entry or os.date '%Y-%m-%d %H:%M:%S'
 
   if entry and M.validate_time_entry(entry) then
     return entry
   end
-  return os.date '%Y%d%s %H:%m:%s'
+  return os.date '%Y-%m-%d %H:%M:%S'
 end
 
 -- it returns boolean so we can know if we should add exp to user for logging
 function M.log_new_day()
-  local current_date = os.date '%Y-%m-%d' -- Current date only
+  local current_date = M.date_format
   local last_day_entry = M.get_last_day()
 
-  -- Extract date part from last_time_entry if present
+  -- Extract date part from last_entry if present
   local last_logged_date = last_day_entry and last_day_entry:match '%d%d%d%d%-%d%d%-%d%d' or nil
 
   -- Compare only the date part
   if last_logged_date ~= current_date then
     local data = M.load_data()
     data.date = data.date or {}
-    table.insert(data.date, os.date '%Y-%m-%d %H:%M:%S')
+    table.insert(data.date, M.date_format)
     M.save_data(data)
     return true
   end
