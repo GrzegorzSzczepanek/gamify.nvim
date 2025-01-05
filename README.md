@@ -1,9 +1,29 @@
 # Gamify.nvim
+<<<<<<< HEAD
+=======
 
 A small plugin to “gamify” your coding sessions in Neovim. It tracks your coding activity, rewards you with experience points (XP), and unlocks achievements based on various milestones—from writing lines of code to hitting daily streaks and fixing errors. It also gives you random compliments and xp just for using the best editor around. 
 
 ## Features
 
+- **Daily Tracking**: Increments your day streak each time you open Neovim on a new day.  
+- **Line Counting**: Collects how many lines of code you’ve written per language.  
+- **Error Fixes**: Counts how many errors you fix (with optional checks that errors truly disappear).  
+- **XP and Levels**: Earn XP for tasks, achievements, or random “lucky” events.  
+- **Achievement Popups**: Unlock achievements that display a popup and confetti effect.  
+
+## Commands
+- **`:Gamify`** – Show the status window (XP, level, achievements, lines, etc.)  
+- **`:Langstats`** – Show a bar chart of languages and line counts  
+- **`:Achievements`** – List your unlocked achievements.
+## Screenshots
+>>>>>>> d5c51cc1ab1d07a5c936c897974c2683d6c5e2c5
+
+A small plugin to “gamify” your coding sessions in Neovim. It tracks your coding activity, rewards you with experience points (XP), and unlocks achievements based on various milestones—from writing lines of code to hitting daily streaks and fixing errors. It also gives you random compliments and xp just for using the best editor around. 
+
+## Features
+
+<<<<<<< HEAD
 - **Daily Tracking**: Increments your day streak each time you open Neovim on a new day.  
 - **Line Counting**: Collects how many lines of code you’ve written per language.  
 - **Error Fixes**: Counts how many errors you fix (with optional checks that errors truly disappear).  
@@ -34,6 +54,51 @@ A small plugin to “gamify” your coding sessions in Neovim. It tracks your co
 
 ## Achievements
 
+=======
+
+
+
+![telegram-cloud-photo-size-4-6037212632525687285-y](https://github.com/user-attachments/assets/398c0d50-cfb3-4a9b-8c0d-b0c6dba05dd9)
+
+![telegram-cloud-photo-size-4-6037212632525687286-y](https://github.com/user-attachments/assets/d9d20490-8781-46d9-bd90-436af5404ee1)
+
+![telegram-cloud-photo-size-4-6037212632525687287-y](https://github.com/user-attachments/assets/6319b1fd-6481-4879-a653-f16fdc5e6660)
+
+## Video Preview
+
+![achievement-gif](https://github.com/user-attachments/assets/f5b07484-a700-47ee-97a7-5d13e9d4ebcf)
+
+## Installation & Usage
+
+1. Install via your preferred plugin manager (e.g., `lazy.nvim`, `packer.nvim`, etc.).  
+2. Require as needed (e.g., `require('gamify')`). Configuration is not available yet.
+3. Start coding! Achievements will unlock automatically, and popups will appear.
+
+```lua
+-- lazy.nvim  
+{
+  'grzegorzszczepanek/gamify.nvim',
+  config = function()
+    require('gamify')
+  end,
+}
+```
+
+```lua
+-- for lazy loading
+local add, later = MiniDeps.add, MiniDeps.later
+
+later(function()
+    add("GrzegorzSzczepanek/gamify.nvim")
+    require("gamify")
+end)
+
+```
+
+
+## Achievements
+
+>>>>>>> d5c51cc1ab1d07a5c936c897974c2683d6c5e2c5
 | **Achievement**            | **Description**                                                              | **XP**  |
 |----------------------------|------------------------------------------------------------------------------|--------:|
 | **Weekly Streak**          | Open Neovim every day for 7 consecutive days                                 | 500     |
