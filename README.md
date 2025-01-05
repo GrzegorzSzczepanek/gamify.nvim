@@ -35,7 +35,18 @@ A small plugin to “gamify” your coding sessions in Neovim. It tracks your co
 
 1. Install via your preferred plugin manager (e.g., `lazy.nvim`, `packer.nvim`, etc.).  
 2. Require as needed (e.g., `require('gamify')`). Configuration is not available yet.
-3. Start coding! Achievements will unlock automatically, and popups will appear.  
+3. Start coding! Achievements will unlock automatically, and popups will appear.
+
+```lua
+-- lazy.nvim  
+{
+  'grzegorzszczepanek/gamify.nvim',
+  config = function()
+    require('gamify')
+  end,
+}
+```
+
 
 ## Achievements
 
