@@ -1,6 +1,12 @@
-# Gamify.nvim
+
+<div align="center">
+<h1 style="text-align: center;">🎮 Gamify your Neovim experience 🎮</h1>
+
+
+![logo](https://github.com/user-attachments/assets/d24d6a76-76cb-4a75-a862-0aa1764e5e13)
 
 A small plugin to “gamify” your coding sessions in Neovim. It tracks your coding activity, rewards you with experience points (XP), and unlocks achievements based on various milestones—from writing lines of code to hitting daily streaks and fixing errors. It also gives you random compliments and xp just for using the best editor around. 
+</div>
 
 ## Features
 
@@ -8,19 +14,9 @@ A small plugin to “gamify” your coding sessions in Neovim. It tracks your co
 - **Line Counting**: Collects how many lines of code you’ve written per language.  
 - **Error Fixes**: Counts how many errors you fix (with optional checks that errors truly disappear).  
 - **XP and Levels**: Earn XP for tasks, achievements, or random “lucky” events.  
-- **Achievement Popups**: Unlock achievements that display a popup and confetti effect.  
+- **Achievement Popups**: Unlock achievements that display a popup and confetti effect.
 
-## Commands
-- **`:Gamify`** – Show the status window (XP, level, achievements, lines, etc.)  
-- **`:Langstats`** – Show a bar chart of languages and line counts  
-- **`:Achievements`** – List your unlocked achievements.
-## Screenshots
-
-
-
-
-
-
+## Screenshots  
 ![telegram-cloud-photo-size-4-6037212632525687285-y](https://github.com/user-attachments/assets/398c0d50-cfb3-4a9b-8c0d-b0c6dba05dd9)
 
 ![telegram-cloud-photo-size-4-6037212632525687286-y](https://github.com/user-attachments/assets/d9d20490-8781-46d9-bd90-436af5404ee1)
@@ -30,6 +26,18 @@ A small plugin to “gamify” your coding sessions in Neovim. It tracks your co
 ## Video Preview
 
 ![achievement-gif](https://github.com/user-attachments/assets/f5b07484-a700-47ee-97a7-5d13e9d4ebcf)
+
+## Commands
+- **`:Gamify`** – Show the status window (XP, level, achievements, lines, etc.)  
+- **`:Langstats`** – Show a bar chart of languages and line counts  
+- **`:Achievements`** – List your unlocked achievements.
+
+
+
+
+
+
+
 
 ## Installation & Usage
 
