@@ -27,6 +27,11 @@ function M.setup()
   -- M.setup gets called when the plugin gets required by eg. user's package manager
   ensure_data_file()
 
+  local data = storage.load_data()
+  data.last_entry = storage.last_entry_format
+  storage.save_data(data)
+
+
   if storage.log_new_day() then
     logic.add_xp(10)
     ui.random_luck_popup()
@@ -34,10 +39,6 @@ function M.setup()
     utils.check_streak()
     achievements.check_all_achievements()
   end
-
-  local data = storage.load_data()
-  data.last_entry = storage.last_entry_format
-  storage.save_data(data)
 
   vim.api.nvim_create_user_command('Gamify', function()
     ui.show_status_window(achievements.get_achievements_table_length())
@@ -67,6 +68,10 @@ function M.setup()
       logic.add_total_time_spent()
       utils.track_night_coding()
       utils.track_morning_coding()
+
+      data = storage.load_data()
+      data.last_entry = nil
+      storage.save_data(data)
     end,
   })
 end
