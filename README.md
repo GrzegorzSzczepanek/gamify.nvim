@@ -92,5 +92,21 @@ end)
 | **Vim enjoyer**            | Spend at least 100 hours in nvim                                             | 4500    |
 | **Get a Life!**            | Spend at least 200 hours in nvim                                             | 9000    |
 
+## Contributing
+Contributions, whether they're bug fixes, new features, documentation improvements, or other enhancements, are always welcome. To ensure a smooth collaboration, please follow these steps:
+
+1. **Open an Issue**: Before submitting a Pull Request (PR), please open an issue to discuss the proposed change. This helps us understand the problem or enhancement you are addressing and avoid duplicate work.
+
+2. **Fork the Repository**: Create a copy of this repository in your own GitHub account by clicking the "Fork" button.
+
+3. **Make Changes**: Implement your changes in a new branch. Use meaningful commit messages to describe your work.
+
+4. **Submit a Pull Request**: Once your changes are ready, submit a PR to the main repository. Ensure that you:
+   - Reference the issue number (if applicable) in your PR description.
+   - Provide a clear and concise summary of your changes.
+
+5. **Code Review**: Your PR will be reviewed, and feedback may be provided. 
+
+
 ## License
 Licensed under the [Apache License 2.0](LICENSE).
