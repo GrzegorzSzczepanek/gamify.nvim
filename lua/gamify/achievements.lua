@@ -26,6 +26,14 @@ end
 
 local achievement_definitions = {
   {
+    name = 'First Gamify Run',
+    description = 'Use the Gamify command for the first time',
+    xp = 100,
+    check = function()
+      return storage.load_data().gamify_cmd_count == 0
+    end,
+  },
+  {
     name = 'Weekly Streak',
     description = 'Open Neovim every day for 7 consecutive days',
     xp = 500,

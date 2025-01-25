@@ -41,6 +41,8 @@ function M.setup()
   end
 
   vim.api.nvim_create_user_command('Gamify', function()
+    data.gamify_cmd_count = data.gamify_cmd_count + 1
+    achievements.check_all_achievements()
     ui.show_status_window(achievements.get_achievements_table_length())
   end, {})
 

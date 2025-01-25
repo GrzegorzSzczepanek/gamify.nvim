@@ -19,6 +19,7 @@ M.data_json_format = {
   errors_fixed = 0,
   day_streak = 1,
   commit_hashes = {},
+  gamify_cmd_count = 0,
 }
 
 function M.load_data()
