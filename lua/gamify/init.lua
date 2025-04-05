@@ -28,9 +28,8 @@ function M.setup()
   ensure_data_file()
 
   local data = storage.load_data()
-  data.last_entry = storage.last_entry_format
+  data.last_entry = os.date('%Y-%m-%d %H:%M:%S')
   storage.save_data(data)
-
 
   if storage.log_new_day() then
     logic.add_xp(10)

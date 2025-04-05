@@ -68,14 +68,10 @@ end
 function M.add_total_time_spent()
   local data = storage.load_data()
   local last_log = data.last_entry
-  local current_time = storage.last_entry_format
-
-  -- print('Last log:', last_log)
-  -- print('Current time:', current_time)
+  -- Use the actual current time when exiting Neovim
+  local current_time = os.date('%Y-%m-%d %H:%M:%S')
 
   local time_diff = utils.check_hour_difference(last_log, current_time)
-  -- print('Time difference (hours):', time_diff)
-
   if time_diff > 0 then
     data.total_time = (data.total_time or 0) + time_diff
     storage.save_data(data)
