@@ -4,8 +4,8 @@ local utils = require 'gamify.utils'
 
 -- A lower exponent B means it takes fewer XP to reach higher levels;
 -- a smaller multiplier A also slows down level progression.
-local A = 0.001
-local B = 1.02
+local A = 0.1
+local B = 0.5
 
 function M.add_xp(amount, achievement)
   -- print('add_xp called with amount:', amount)
