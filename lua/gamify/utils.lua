@@ -71,13 +71,17 @@ function M.check_streak()
 
   local dates = data.date
   local streak = 1
-  local one_day_seconds = 86400
+  -- Use noon (12:00) to anchor timestamps away from the 2 AM DST transition point.
+  -- Allow 23–25 hours between consecutive days to handle DST spring-forward (23 h)
+  -- and fall-back (25 h) transitions.
+  local min_day_seconds = 82800 -- 23 hours
+  local max_day_seconds = 90000 -- 25 hours
 
   -- convert dates to seconds since epoch
   local timestamps = {}
   for _, date in ipairs(dates) do
     local year, month, day = date:match '(%d+)-(%d+)-(%d+)'
-    local time = os.time { year = year, month = month, day = day, hour = 0, min = 0, sec = 0 }
+    local time = os.time { year = year, month = month, day = day, hour = 12, min = 0, sec = 0 }
     table.insert(timestamps, time)
   end
 
@@ -87,7 +91,7 @@ function M.check_streak()
 
   for i = 2, #timestamps do
     local difference = os.difftime(timestamps[i - 1], timestamps[i])
-    if difference <= one_day_seconds then
+    if difference >= min_day_seconds and difference <= max_day_seconds then
       streak = streak + 1
     else
       break
