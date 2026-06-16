@@ -22,7 +22,7 @@ Track your activity, earn XP, level up, and unlock achievements while you code.
 - **Prestige System**: Hit the level cap, then prestige for a permanent XP bonus.
 - **Activity Heatmap**: A GitHub-style contribution graph of your coding, right inside Neovim (`:GamifyHeatmap`).
 - **Share Card**: Generate a shareable ASCII character card and yank it to your clipboard (`:GamifyShare`).
-- **Mini-Games**: Take a break with built-in games like **Vim Snake**, **Saper (Minesweeper)**, and **Sudoku**.
+- **Mini-Games**: Take a break with built-in games like **Vim Snake**, **Saper (Minesweeper)**, **Sudoku**, and **Gomoku** (5-in-a-row, with local & LAN play).
 - **Gamify Katas**: Solve 8 algorithmic challenges (Codewars-style) directly in your editor, with a bonus **kata of the day**.
 - **Clean Code Bonus**: Get rewarded for saving files with zero errors (once per buffer, no grinding).
 - **Achievement System**: 21 unique milestones with confetti effects and popups.
@@ -41,7 +41,7 @@ Level, XP bar, role, prestige, focus combo, progress to your next achievement, d
 
 ### Activity Heatmap
 A GitHub-style contribution graph of your coding, via `:GamifyHeatmap`.
-![Uploading image.png…]()
+<img width="2464" height="1602" alt="image" src="https://github.com/user-attachments/assets/df1bfde4-783c-4134-bee4-499d3de9da24" />
 
 
 ### Share Card
@@ -57,6 +57,12 @@ A shareable ASCII character card you can yank to your clipboard, via `:GamifySha
 The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution buffer.
 <img width="480" height="318" alt="image" src="https://github.com/user-attachments/assets/77e44a98-186c-460f-8a74-683acdd2c955" />
 <img width="716" height="422" alt="image" src="https://github.com/user-attachments/assets/5cb8ecec-2984-4cd9-9c75-339a900bca4a" />
+
+
+### Gomoku (5-in-a-row)
+The 20×20 board in action — local hot-seat or LAN multiplayer (`:Gomoku`).
+<img width="1710" height="1112" alt="image" src="https://github.com/user-attachments/assets/a8c80b52-dcd6-4a3d-bb96-8db5358a7fde" />
+
 
 ---
 
@@ -83,6 +89,7 @@ The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution bu
 - **`:GamifySnake`** – Launch the **Vim Snake** mini-game.
 - **`:GamifySaper`** – Launch the **Saper (Minesweeper)** mini-game.
 - **`:GamifySudoku`** – Launch the **Sudoku** mini-game.
+- **`:Gomoku`** – Play **Gomoku** (5-in-a-row on 20×20) locally; `:Gomoku host [port]` / `:Gomoku join <ip> [port]` for LAN.
 - **`:GamifyChallenges`** – Start solving **Gamify Katas**.
 - **`:GamifyHeatmap`** – View your activity heatmap.
 - **`:GamifyShare`** – Generate a shareable character card.
@@ -108,6 +115,59 @@ Classic Minesweeper directly in your editor. Type `:GamifySaper`.
 Classic Sudoku with difficulty levels. Type `:GamifySudoku`.
 - **Controls**: `h, j, k, l` to move, `1-9` to enter numbers, `d` to change difficulty, `0/x` to clear.
 - **Reward**: Solve the puzzle to earn up to **500 XP**!
+
+### Gomoku (5-in-a-row)
+Tic-tac-toe's big sibling: a **20×20** board where you win by lining up **five** stones
+in a row — horizontally, vertically, or diagonally. Play side-by-side on one machine,
+or against a friend over your local network.
+
+<!-- TODO: screenshot of :Gomoku -->
+<!-- ![Gomoku](docs/screenshots/gomoku.png) -->
+
+#### Controls
+| Key | Action |
+|-----|--------|
+| `h` `j` `k` `l` | Move the cursor around the board |
+| `<Enter>` / `<Space>` | Place a stone on the current cell |
+| `r` | Rematch / clear the board (local mode only) |
+| `q` / `<Esc>` | Quit back to the dashboard |
+
+`X` always moves first. Win a game to earn **150 XP**.
+
+#### Local mode (one machine, two players)
+Just run:
+```vim
+:Gomoku
+```
+Two players share the keyboard and take turns placing `X` and `O`. Open it from the
+dashboard too: press `t` in `:Gamify`.
+
+#### LAN mode (two machines on the same network)
+Play over TCP — no servers, accounts, or extra dependencies. One player **hosts**, the
+other **joins**.
+
+1. **Host** (this player is `X` and moves first):
+   ```vim
+   :Gomoku host 5050
+   ```
+   Neovim starts listening on port `5050` and waits for an opponent.
+
+2. Find the host's **LAN IP address** (e.g. `192.168.1.42`):
+   - Linux/macOS: `ip addr` or `ifconfig` (look for a `192.168.x.x` / `10.x.x.x` address).
+   - macOS: System Settings → Network, or `ipconfig getifaddr en0`.
+
+3. **Join** from the second machine (this player is `O`):
+   ```vim
+   :Gomoku join 192.168.1.42 5050
+   ```
+
+Once connected, both boards open and moves sync automatically — you can only place a
+stone on your turn. The port is `5050` by default but you can pass any free port, as
+long as host and join use the same one.
+
+> **Note:** A rematch (`r`) currently only works in local mode. Over LAN, restart the
+> game to play again. You may also need to allow the chosen port through both machines'
+> firewalls.
 
 ---
 
