@@ -41,7 +41,7 @@ Level, XP bar, role, prestige, focus combo, progress to your next achievement, d
 
 ### Activity Heatmap
 A GitHub-style contribution graph of your coding, via `:GamifyHeatmap`.
-![Uploading image.png…]()
+<img width="2464" height="1602" alt="image" src="https://github.com/user-attachments/assets/df1bfde4-783c-4134-bee4-499d3de9da24" />
 
 
 ### Share Card
@@ -61,7 +61,7 @@ The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution bu
 
 ### Gomoku (5-in-a-row)
 The 20×20 board in action — local hot-seat or LAN multiplayer (`:Gomoku`).
-<!-- Drop your screenshot below: drag a PNG/GIF here on GitHub, or replace this line with an <img> tag. -->
+<img width="1710" height="1112" alt="image" src="https://github.com/user-attachments/assets/a8c80b52-dcd6-4a3d-bb96-8db5358a7fde" />
 
 
 ---
