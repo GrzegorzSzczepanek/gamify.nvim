@@ -4,7 +4,7 @@ local SIZE = 20
 local WIN_LEN = 5
 local XP_WIN = 150
 
-local CELL_EMPTY = '·'
+local CELL_EMPTY = '.'
 local CELL_X = 'X'
 local CELL_O = 'O'
 
@@ -85,6 +85,14 @@ local function open_session(opts)
 
   local ns = vim.api.nvim_create_namespace 'gamify_gomoku'
 
+  local BOARD_BASE_ROW = 3 -- 0-based buffer line where the board grid starts
+  local LEADING = 1 -- leading space before the first cell on each board line
+
+  -- Buffer position (0-based row, 0-based byte col) of a logical cell.
+  local function cell_pos(x, y)
+    return BOARD_BASE_ROW + (y - 1), LEADING + (x - 1) * 2
+  end
+
   local function in_win_cells(x, y)
     if not win_cells then
       return false
@@ -129,13 +137,10 @@ local function open_session(opts)
     vim.api.nvim_buf_set_option(buf, 'modifiable', false)
 
     vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-    -- board starts at line index 3 (0-based), each cell at col 1 + (x-1)*2
-    local base_row = 3
     for y = 1, SIZE do
       for x = 1, SIZE do
         local v = board[y][x]
-        local col = 1 + (x - 1) * 2
-        local row = base_row + (y - 1)
+        local row, col = cell_pos(x, y)
         local hl
         if in_win_cells(x, y) then
           hl = 'GamifyGomokuWin'
@@ -149,11 +154,15 @@ local function open_session(opts)
         end
       end
     end
-    -- cursor highlight
+
+    -- Highlight the focused cell and pin the real cursor onto it so the
+    -- blinking cursor and the highlight always agree (never lands in a gap).
     if not finished then
-      local col = 1 + (cursor.x - 1) * 2
-      local row = base_row + (cursor.y - 1)
+      local row, col = cell_pos(cursor.x, cursor.y)
       vim.api.nvim_buf_add_highlight(buf, ns, 'GamifyGomokuCursor', row, col, col + 1)
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_set_cursor(win, { row + 1, col })
+      end
     end
   end
 
@@ -239,8 +248,28 @@ local function open_session(opts)
   vim.keymap.set('n', 'l', function() move_cursor(1, 0) end, { buffer = buf })
   vim.keymap.set('n', 'k', function() move_cursor(0, -1) end, { buffer = buf })
   vim.keymap.set('n', 'j', function() move_cursor(0, 1) end, { buffer = buf })
+  vim.keymap.set('n', '<Left>', function() move_cursor(-1, 0) end, { buffer = buf })
+  vim.keymap.set('n', '<Right>', function() move_cursor(1, 0) end, { buffer = buf })
+  vim.keymap.set('n', '<Up>', function() move_cursor(0, -1) end, { buffer = buf })
+  vim.keymap.set('n', '<Down>', function() move_cursor(0, 1) end, { buffer = buf })
   vim.keymap.set('n', '<CR>', try_place_here, { buffer = buf })
   vim.keymap.set('n', '<Space>', try_place_here, { buffer = buf })
+
+  -- Safety net: if any unmapped motion drifts the real cursor, snap it back
+  -- to the focused cell so it can never sit in the gaps between stones.
+  vim.api.nvim_create_autocmd('CursorMoved', {
+    buffer = buf,
+    callback = function()
+      if finished or not vim.api.nvim_win_is_valid(win) then
+        return
+      end
+      local row, col = cell_pos(cursor.x, cursor.y)
+      local cur = vim.api.nvim_win_get_cursor(win)
+      if cur[1] ~= row + 1 or cur[2] ~= col then
+        vim.api.nvim_win_set_cursor(win, { row + 1, col })
+      end
+    end,
+  })
   vim.keymap.set('n', 'r', function()
     if my_symbol then
       return -- rematch sync not supported in LAN yet
