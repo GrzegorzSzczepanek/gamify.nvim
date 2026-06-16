@@ -39,16 +39,6 @@ Level, XP bar, role, prestige, focus combo, progress to your next achievement, d
 <img width="1700" height="1013" alt="image" src="https://github.com/user-attachments/assets/2ee9536d-0c8e-4eb1-88f1-8248df3b1132" />
 
 
-### Activity Heatmap
-A GitHub-style contribution graph of your coding, via `:GamifyHeatmap`.
-<img width="2464" height="1602" alt="image" src="https://github.com/user-attachments/assets/df1bfde4-783c-4134-bee4-499d3de9da24" />
-
-
-### Share Card
-A shareable ASCII character card you can yank to your clipboard, via `:GamifyShare`.
-<img width="436" height="322" alt="image" src="https://github.com/user-attachments/assets/1373860f-9e7f-4eda-b5f8-8537b8bdb1e1" />
-
-
 ### Screenshots
 <img width="2028" height="1594" alt="image" src="https://github.com/user-attachments/assets/a1505784-f629-40cd-9bf4-1af510c990bb" />
 
