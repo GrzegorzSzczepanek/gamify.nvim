@@ -1,11 +1,14 @@
 local M = {}
 
 local data_file = vim.fn.stdpath 'data' .. '/gamify/data.json'
+local config = require 'gamify.config'
 local ui = require 'gamify.ui'
 local logic = require 'gamify.logic'
 local storage = require 'gamify.storage'
 local achievements = require 'gamify.achievements'
 local utils = require 'gamify.utils'
+local quests = require 'gamify.quests'
+local focus = require 'gamify.focus'
 
 local function ensure_data_file()
   local data_dir = vim.fn.stdpath 'data' .. '/gamify'
@@ -23,24 +26,11 @@ local function ensure_data_file()
   end
 end
 
-function M.setup()
-  -- M.setup gets called when the plugin gets required by eg. user's package manager
-  ensure_data_file()
-
-  local data = storage.load_data()
-  data.last_entry = os.date('%Y-%m-%d %H:%M:%S')
-  storage.save_data(data)
-
-  if storage.log_new_day() then
-    logic.add_xp(10)
-    ui.random_luck_popup()
-    utils.calculate_all_lines_written()
-    utils.check_streak()
-    achievements.check_all_achievements()
-  end
-
+local function register_commands()
   vim.api.nvim_create_user_command('Gamify', function()
-    data.gamify_cmd_count = data.gamify_cmd_count + 1
+    local data = storage.load_data()
+    data.gamify_cmd_count = (data.gamify_cmd_count or 0) + 1
+    storage.save_data(data)
     achievements.check_all_achievements()
     ui.show_status_window(achievements.get_achievements_table_length())
   end, {})
@@ -53,30 +43,122 @@ function M.setup()
     ui.show_achievements()
   end, {})
 
+  vim.api.nvim_create_user_command('GamifySnake', function()
+    require('gamify.games').start_snake()
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifyChallenges', function()
+    require('gamify.challenges').show_challenges_menu()
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifySaper', function()
+    require('gamify.games').start_minesweeper()
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifySudoku', function()
+    require('gamify.games').start_sudoku()
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifyHeatmap', function()
+    ui.show_heatmap()
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifyShare', function()
+    ui.show_share_card()
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifyStats', function()
+    local data = storage.load_data()
+    local lvl = data.level or 1
+    vim.notify(
+      string.format(
+        'Gamify: Lvl %d | XP %d | %d lines | %d commits | streak %d | prestige %d',
+        lvl,
+        math.floor(data.xp or 0),
+        data.lines_written or 0,
+        #(data.commit_hashes or {}),
+        data.day_streak or 1,
+        data.prestige or 0
+      ),
+      vim.log.levels.INFO,
+      { title = 'Gamify' }
+    )
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifyPrestige', function()
+    logic.prestige()
+  end, {})
+
+  vim.api.nvim_create_user_command('GamifyReset', function()
+    vim.ui.input({ prompt = 'Type RESET to wipe all Gamify progress: ' }, function(input)
+      if input == 'RESET' then
+        storage.save_data(vim.deepcopy(storage.data_json_format))
+        vim.notify('Gamify progress has been reset.', vim.log.levels.WARN, { title = 'Gamify' })
+      else
+        vim.notify('Reset cancelled.', vim.log.levels.INFO, { title = 'Gamify' })
+      end
+    end)
+  end, {})
+end
+
+local function register_autocommands()
+  local group = vim.api.nvim_create_augroup('Gamify', { clear = true })
+
   vim.api.nvim_create_autocmd('BufWritePost', {
+    group = group,
     pattern = '*',
     callback = function()
       ui.random_luck_popup()
       logic.track_lines()
       achievements.track_error_fixes()
       utils.calculate_all_lines_written()
+      quests.on_save()
       achievements.check_all_achievements()
+      logic.check_clean_code()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI', 'TextChanged', 'TextChangedI' }, {
+    group = group,
+    callback = function()
+      logic.track_keypress()
+      focus.tick()
     end,
   })
 
   vim.api.nvim_create_autocmd('VimLeavePre', {
+    group = group,
     callback = function()
       logic.add_total_time_spent()
       utils.track_night_coding()
       utils.track_morning_coding()
-
-      data = storage.load_data()
-      data.last_entry = nil
-      storage.save_data(data)
+      focus.flush()
     end,
   })
 end
 
-M.setup()
+function M.setup(opts)
+  config.setup(opts)
+
+  ensure_data_file()
+
+  local data = storage.load_data()
+  data.last_entry = os.date '%Y-%m-%d %H:%M:%S'
+  storage.save_data(data)
+
+  if storage.log_new_day() then
+    logic.add_xp(config.get().xp.new_day)
+    ui.random_luck_popup()
+    utils.calculate_all_lines_written()
+    utils.check_streak()
+    quests.generate_for_today()
+    achievements.check_all_achievements()
+  else
+    quests.generate_for_today()
+  end
+
+  register_commands()
+  register_autocommands()
+end
 
 return M

@@ -63,39 +63,53 @@ function M.check_hour_difference(time1, time2)
   return diff_in_seconds / 3600
 end
 
+-- Day number since epoch; comparing these avoids DST / 86400s drift.
+local function date_to_day_number(date_string)
+  local year, month, day = date_string:match '(%d+)-(%d+)-(%d+)'
+  if not year then
+    return nil
+  end
+  local t = os.time { year = year, month = month, day = day, hour = 12, min = 0, sec = 0 }
+  return math.floor(t / 86400)
+end
+
 function M.check_streak()
   local data = storage.load_data()
   if not data or type(data.date) ~= 'table' or #data.date == 0 then
     return 0
   end
 
-  local dates = data.date
-  local streak = 1
-  local one_day_seconds = 86400
-
-  -- convert dates to seconds since epoch
-  local timestamps = {}
-  for _, date in ipairs(dates) do
-    local year, month, day = date:match '(%d+)-(%d+)-(%d+)'
-    local time = os.time { year = year, month = month, day = day, hour = 0, min = 0, sec = 0 }
-    table.insert(timestamps, time)
+  local seen = {}
+  local days = {}
+  for _, date in ipairs(data.date) do
+    local dn = date_to_day_number(date)
+    if dn and not seen[dn] then
+      seen[dn] = true
+      table.insert(days, dn)
+    end
   end
 
-  table.sort(timestamps, function(a, b)
+  table.sort(days, function(a, b)
     return a > b
   end)
 
-  for i = 2, #timestamps do
-    local difference = os.difftime(timestamps[i - 1], timestamps[i])
-    if difference <= one_day_seconds then
-      streak = streak + 1
-    else
-      break
+  -- A streak is broken unless the latest logged day is today or yesterday.
+  local today = math.floor(os.time() / 86400)
+  local streak = 0
+  if days[1] and (today - days[1]) <= 1 then
+    streak = 1
+    for i = 2, #days do
+      if days[i - 1] - days[i] == 1 then
+        streak = streak + 1
+      else
+        break
+      end
     end
   end
 
   data.day_streak = streak
   storage.save_data(data)
+  return streak
 end
 
 function M.get_table_length(t)
@@ -104,18 +118,6 @@ function M.get_table_length(t)
     count = count + 1
   end
   return count
-end
-
--- TODO: unify time and fix inconsistencies
-function M.hours_in_nvim()
-  local data = storage.load_data()
-  local last_time = data.last_time_entry
-  if last_time then
-    local current_time = os.time()
-    local time_diff = os.difftime(current_time, last_time)
-    return time_diff
-  end
-  return 0
 end
 
 -- returns difference in hours
@@ -137,6 +139,7 @@ function M.calculate_time_difference()
   return time_diff / 3600
 end
 
+-- Must not mutate last_entry: the session boundary is owned by add_total_time_spent.
 function M.track_night_coding()
   local data = storage.load_data()
   local current_time = os.date '%Y-%m-%d %H:%M:%S'
@@ -146,19 +149,15 @@ function M.track_night_coding()
     local last_entry_parsed = M.parse_time(data.last_entry)
     if last_entry_parsed then
       local last_hour = tonumber(last_entry_parsed.hour)
-      -- Condition: hour >= 23 (11PM) OR hour < 4 (midnight–3AM)
       if (last_hour >= 23) or (last_hour < 4) then
         data.code_nights = (data.code_nights or 0) + 1
+        storage.save_data(data)
       end
     end
   end
-
-  data.last_entry = current_time
-  storage.save_data(data)
 end
 
--- Morning is 06:00–10:59
--- If the 'last_entry' was in that window and you've coded >= 3 hrs, increment code_mornings.
+-- Read-only on last_entry, same as track_night_coding.
 function M.track_morning_coding()
   local data = storage.load_data()
   local current_time = os.date '%Y-%m-%d %H:%M:%S'
@@ -168,15 +167,12 @@ function M.track_morning_coding()
     local last_entry_parsed = M.parse_time(data.last_entry)
     if last_entry_parsed then
       local last_hour = tonumber(last_entry_parsed.hour)
-      -- Condition: hour >= 6 (6AM) and hour < 11 (10:59AM)
       if last_hour >= 6 and last_hour < 11 then
         data.code_mornings = (data.code_mornings or 0) + 1
+        storage.save_data(data)
       end
     end
   end
-
-  data.last_entry = current_time
-  storage.save_data(data)
 end
 
 function M.get_file_language(extension)
@@ -242,14 +238,6 @@ function M.calculate_all_lines_written()
 
   data.lines_written = all_lines
   storage.save_data(data)
-end
-
-function M.get_day_streak()
-  local data = storage.load_data()
-  local days_in_nvim = data.date
-
-  for i = 1, #days_in_nvim do
-  end
 end
 
 return M

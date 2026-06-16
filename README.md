@@ -1,112 +1,222 @@
 
 <div align="center">
-<h1 style="text-align: center;">🎮 Gamify your Neovim experience 🎮</h1>
-
+<h1 style="text-align: center;">🎮 Gamify.nvim 🎮</h1>
 
 ![logo](https://github.com/user-attachments/assets/d24d6a76-76cb-4a75-a862-0aa1764e5e13)
 
-A small plugin to “gamify” your coding sessions in Neovim. It tracks your coding activity, rewards you with experience points (XP), and unlocks achievements based on various milestones—from writing lines of code to hitting daily streaks and fixing errors. It also gives you random compliments and xp just for using the best editor around. 
+**Turn your Neovim into an RPG experience.**  
+Track your activity, earn XP, level up, and unlock achievements while you code.
+
+[Features](#features) • [Installation](#installation--usage) • [Mini-Games](#mini-games) • [Challenges](#gamify-katas) • [Achievements](#achievements)
 </div>
 
-## Features
+---
 
-- **Daily Tracking**: Increments your day streak each time you open Neovim on a new day.  
-- **Line Counting**: Collects how many lines of code you’ve written per language.  
-- **Error Fixes**: Counts how many errors you fix (with optional checks that errors truly disappear).  
-- **XP and Levels**: Earn XP for tasks, achievements, or random “lucky” events.  
-- **Achievement Popups**: Unlock achievements that display a popup and confetti effect.
+## 🚀 Features
 
-## Screenshots  
-![telegram-cloud-photo-size-4-6037212632525687285-y](https://github.com/user-attachments/assets/398c0d50-cfb3-4a9b-8c0d-b0c6dba05dd9)
+- **Unified Dashboard**: Access everything from one place with `:Gamify`.
+- **Character Classes**: Are you a **Frontend Wizard**, **Systems Ninja**, or **Plugin Sorcerer**? Your role evolves based on your most-used languages!
+- **XP & Leveling System**: Earn XP for writing code, fixing bugs, and completing challenges. Watch your progress bar grow!
+- **Daily Quests**: 3 fresh objectives every day with progress tracking and a completion bonus.
+- **Focus Combo**: Code uninterrupted to build a focus streak that multiplies your XP (up to x3).
+- **Prestige System**: Hit the level cap, then prestige for a permanent XP bonus.
+- **Activity Heatmap**: A GitHub-style contribution graph of your coding, right inside Neovim (`:GamifyHeatmap`).
+- **Share Card**: Generate a shareable ASCII character card and yank it to your clipboard (`:GamifyShare`).
+- **Mini-Games**: Take a break with built-in games like **Vim Snake**, **Saper (Minesweeper)**, and **Sudoku**.
+- **Gamify Katas**: Solve 8 algorithmic challenges (Codewars-style) directly in your editor, with a bonus **kata of the day**.
+- **Clean Code Bonus**: Get rewarded for saving files with zero errors (once per buffer, no grinding).
+- **Achievement System**: 21 unique milestones with confetti effects and popups.
+- **Statusline Component**: Show your level, XP bar, and streak in lualine/heirline.
+- **Fully Configurable**: Tune every XP reward, quest, and feature via `setup()`.
+- **Fresh Repo Support**: Works seamlessly even in brand-new git repositories.
 
-![telegram-cloud-photo-size-4-6037212632525687286-y](https://github.com/user-attachments/assets/d9d20490-8781-46d9-bd90-436af5404ee1)
+---
 
-![telegram-cloud-photo-size-4-6037212632525687287-y](https://github.com/user-attachments/assets/6319b1fd-6481-4879-a653-f16fdc5e6660)
+## 📸 Screenshots
 
-## Video Preview
-
-![achievement-gif](https://github.com/user-attachments/assets/f5b07484-a700-47ee-97a7-5d13e9d4ebcf)
-
-## Commands
-- **`:Gamify`** – Show the status window (XP, level, achievements, lines, etc.)  
-- **`:Langstats`** – Show a bar chart of languages and line counts  
-- **`:Achievements`** – List your unlocked achievements.
-
-
-
-
-
-
+### The Dashboard
+Level, XP bar, role, prestige, focus combo, progress to your next achievement, daily quests, and the menu — all from `:Gamify`.
+<img width="1700" height="1013" alt="image" src="https://github.com/user-attachments/assets/2ee9536d-0c8e-4eb1-88f1-8248df3b1132" />
 
 
-## Installation & Usage
+### Activity Heatmap
+A GitHub-style contribution graph of your coding, via `:GamifyHeatmap`.
+![Uploading image.png…]()
 
-1. Install via your preferred plugin manager (e.g., `lazy.nvim`, `packer.nvim`, etc.).  
-2. Require as needed (e.g., `require('gamify')`). Configuration is not available yet.
-3. Start coding! Achievements will unlock automatically, and popups will appear.
 
+### Share Card
+A shareable ASCII character card you can yank to your clipboard, via `:GamifyShare`.
+<img width="436" height="322" alt="image" src="https://github.com/user-attachments/assets/1373860f-9e7f-4eda-b5f8-8537b8bdb1e1" />
+
+
+### Screenshots
+<img width="2028" height="1594" alt="image" src="https://github.com/user-attachments/assets/a1505784-f629-40cd-9bf4-1af510c990bb" />
+
+
+### Gamify Katas
+The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution buffer.
+<img width="480" height="318" alt="image" src="https://github.com/user-attachments/assets/77e44a98-186c-460f-8a74-683acdd2c955" />
+<img width="716" height="422" alt="image" src="https://github.com/user-attachments/assets/5cb8ecec-2984-4cd9-9c75-339a900bca4a" />
+
+---
+
+## 📦 Installation & Usage
+
+### 1. Install via your preferred plugin manager
+
+**lazy.nvim**
 ```lua
--- lazy.nvim  
 {
   'grzegorzszczepanek/gamify.nvim',
   config = function()
-    require('gamify')
+    require('gamify').setup()
   end,
 }
 ```
 
-```lua
--- for lazy loading
-local add, later = MiniDeps.add, MiniDeps.later
+> **Note:** `gamify.nvim` no longer auto-initializes on `require`. You must call
+> `require('gamify').setup()` (optionally with a config table) for commands and
+> tracking to be registered.
 
-later(function()
-    add("GrzegorzSzczepanek/gamify.nvim")
-    require("gamify")
-end)
+### 2. Commands
+- **`:Gamify`** – Open the **Unified Dashboard** (Center of Command).
+- **`:GamifySnake`** – Launch the **Vim Snake** mini-game.
+- **`:GamifySaper`** – Launch the **Saper (Minesweeper)** mini-game.
+- **`:GamifySudoku`** – Launch the **Sudoku** mini-game.
+- **`:GamifyChallenges`** – Start solving **Gamify Katas**.
+- **`:GamifyHeatmap`** – View your activity heatmap.
+- **`:GamifyShare`** – Generate a shareable character card.
+- **`:GamifyStats`** – Quick stats line via `vim.notify`.
+- **`:GamifyPrestige`** – Prestige (resets XP for a permanent bonus).
+- **`:GamifyReset`** – Wipe all progress (asks for confirmation).
+- **`:LangStats`** – Detailed breakdown of lines per language.
+- **`:Achievements`** – View your trophy room.
 
-```
+---
 
+## 🐍 Mini-Games
 
-## Achievements
+### Vim Snake
+Feeling stuck? Type `:GamifySnake` and use `h`, `j`, `k`, `l` to control the snake. Each 🍎 you eat gives you **10 XP**!
+
+### Saper (Minesweeper)
+Classic Minesweeper directly in your editor. Type `:GamifySaper`.
+- **Controls**: `h, j, k, l` to move, `<Enter>` to reveal, `f` to flag.
+- **Reward**: Win the game to earn **200 XP**!
+
+### Sudoku
+Classic Sudoku with difficulty levels. Type `:GamifySudoku`.
+- **Controls**: `h, j, k, l` to move, `1-9` to enter numbers, `d` to change difficulty, `0/x` to clear.
+- **Reward**: Solve the puzzle to earn up to **500 XP**!
+
+---
+
+## 🏆 Gamify Katas
+Improve your Lua and algorithmic skills without leaving Neovim.
+1. Open the menu via `:Gamify` and press `c` (or run `:GamifyChallenges`).
+2. Select a challenge (e.g., *Reverse String*, *FizzBuzz*, *Fibonacci*).
+3. Write your solution and press `<Enter>` to run tests.
+4. Pass all tests to claim your reward!
+
+There are **8 katas**, each solvable once for XP. One is the **⭐ Kata of the Day**
+and awards **+50% XP** the first time you solve it each day. Solutions run in a
+sandbox, so `solution` won't leak into your global environment.
+
+---
+
+## 🎯 Daily Quests & Combos
+
+- **Daily Quests** — Every day you get 3 randomized objectives (write N lines,
+  make N commits, fix bugs, solve a kata, play a game…). Progress is tracked
+  live on the dashboard, and clearing all three grants a bonus.
+- **Focus Combo** — Keep coding without long breaks to build a focus streak.
+  Your XP multiplier rises the longer you stay in flow (up to x3), and resets
+  after you go idle.
+- **Prestige** — Once you reach the level cap (default 50), run `:GamifyPrestige`
+  to reset your XP in exchange for a permanent XP bonus that stacks each rank.
+
+---
+
+## 🏅 Achievements
 
 | **Achievement**            | **Description**                                                              | **XP**  |
 |----------------------------|------------------------------------------------------------------------------|--------:|
 | **Weekly Streak**          | Open Neovim every day for 7 consecutive days                                 | 500     |
-| **Two Weeks Streak**       | Open Neovim every day for 14 consecutive days                                | 1500    |
-| **One Month Streak**       | Open Neovim every day for 30 consecutive days                                | 4000    |
-| **Hundred lines**          | Write 100 lines of code                                                      | 100     |
-| **Thousand Lines**         | Write 1000 lines of code                                                     | 150     |
-| **Two Thousand Lines**     | Write 2000 lines of code                                                     | 350     |
-| **Five Thousand Lines**    | Write 5000 lines of code                                                     | 600     |
-| **Ten Thousand Lines**     | Write 10000 lines of code                                                    | 800     |
-| **Twenty Five Thousand Lines** | Write 25000 lines of code                                               | 2000    |
 | **Night Owl**              | Code for at least 3 hours between 11PM and 4AM five times                     | 1000    |
 | **Early Bird**             | Code for at least 3 hours between 6AM and 11AM five times                     | 1000    |
-| **Jack of Many**           | Write at least 1000 lines in at least 5 languages                            | 2500    |
 | **Polyglot**               | Write at least 1000 lines in at least 10 languages                           | 5000    |
-| **Marathoner**             | Code continuously for at least 6 hours                                       | 1800    |
-| **Git Apprentice**         | Make 10 total commits in your coding journey                                 | 300     |
-| **Git Journeyman**         | Make 50 total commits in your coding journey                                 | 1000    |
-| **Git Master**             | Make 100 total commits in your coding journey                                | 3000    |
 | **Commit Deity**           | Make 500 total commits in your coding journey                                | 8000    |
-| **Vim enjoyer**            | Spend at least 100 hours in nvim                                             | 4500    |
 | **Get a Life!**            | Spend at least 200 hours in nvim                                             | 9000    |
 
-## Contributing
-Contributions, whether they're bug fixes, new features, documentation improvements, or other enhancements, are always welcome. To ensure a smooth collaboration, please follow these steps:
+*(And many more... type `:Achievements` to see them all!)*
 
-1. **Open an Issue**: Before submitting a Pull Request (PR), please open an issue to discuss the proposed change. This helps us understand the problem or enhancement you are addressing and avoid duplicate work.
+---
 
-2. **Fork the Repository**: Create a copy of this repository in your own GitHub account by clicking the "Fork" button.
+## 📊 Statusline
 
-3. **Make Changes**: Implement your changes in a new branch. Use meaningful commit messages to describe your work.
+Show your level, an XP bar, and your streak in your statusline:
 
-4. **Submit a Pull Request**: Once your changes are ready, submit a PR to the main repository. Ensure that you:
-   - Reference the issue number (if applicable) in your PR description.
-   - Provide a clear and concise summary of your changes.
+```lua
+-- lualine example
+require('lualine').setup {
+  sections = {
+    lualine_x = {
+      function() return require('gamify.logic').get_statusline_bar() end,
+    },
+  },
+}
+```
 
-5. **Code Review**: Your PR will be reviewed, and feedback may be provided. 
+`get_statusline_bar(bar_width)` renders e.g. `Lvl 12 [████░░] 🔥7`.
+For a minimal variant use `get_statusline_text()` → `Lvl 12 🔥 7`.
 
+---
 
-## License
+## 🛠️ Configuration
+
+Pass a table to `setup()` to override any default. Shown below with defaults:
+
+```lua
+require('gamify').setup {
+  xp = {
+    per_lines = 10,        -- 1 XP per N lines written
+    per_keypresses = 50,   -- 1 XP per N keypresses
+    per_error_fixed = 5,   -- XP per resolved diagnostic error
+    clean_code = 15,       -- XP for saving a buffer with zero errors
+    new_day = 10,          -- XP for the first launch on a new day
+    random_luck = 50,      -- XP for the rare lucky bonus
+    snake_per_apple = 10,
+    saper_win = 200,
+  },
+  clean_code_once_per_buffer = true, -- prevent `:w` XP farming
+  random_luck_chance = 40,           -- 1-in-N chance per save / new day
+  focus = {
+    enabled = true,
+    idle_timeout_sec = 120,  -- a longer gap resets the combo
+    tier_seconds = 300,      -- every N focused seconds bumps the multiplier
+    max_multiplier = 3.0,
+  },
+  quests = {
+    enabled = true,
+    count = 3,               -- quests generated per day
+    completion_bonus = 200,  -- bonus XP for clearing all daily quests
+  },
+  leveling = { A = 0.001, B = 1.02 }, -- level = floor(1 + A * (xp ^ B))
+  prestige = {
+    enabled = true,
+    level_required = 50,
+    xp_bonus_per_rank = 0.05, -- +5% XP per prestige rank
+  },
+  ui = {
+    confetti = true,
+    popups = true,
+    xp_popups = true,
+    popup_timeout_ms = 5000,
+  },
+}
+```
+
+---
+
+## 📜 License
 Licensed under the [Apache License 2.0](LICENSE).
