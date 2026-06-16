@@ -20,6 +20,21 @@ M.data_json_format = {
   day_streak = 1,
   commit_hashes = {},
   gamify_cmd_count = 0,
+  keypress_count = 0,
+  prestige = 0,
+  completed_katas = {}, -- keyed by tostring(kata_id) (JSON has no integer keys)
+  daily_kata_done = nil,
+  daily_xp = {}, -- ['YYYY-MM-DD'] = xp, drives the heatmap
+  quests = {
+    date = nil,
+    active = {},
+    bonus_claimed = false,
+  },
+  high_scores = {
+    snake = 0,
+    saper = nil, -- best time in seconds
+    sudoku = nil, -- best time in seconds
+  },
 }
 
 function M.load_data()
@@ -31,14 +46,23 @@ function M.load_data()
   local content = file:read '*a'
   file:close()
 
-  local data = vim.fn.json_decode(content)
+  local ok, data = pcall(vim.fn.json_decode, content)
+  if not ok or type(data) ~= 'table' then
+    return vim.deepcopy(M.data_json_format)
+  end
 
-  local defaults = M.data_json_format
-  for k, v in pairs(defaults) do
-    if data[k] == nil then
-      data[k] = v
+  -- Backfill defaults (including nested tables) onto older data files.
+  local is_list = vim.islist or vim.tbl_islist
+  local function backfill(target, defaults)
+    for k, v in pairs(defaults) do
+      if target[k] == nil then
+        target[k] = vim.deepcopy(v)
+      elseif type(v) == 'table' and type(target[k]) == 'table' and not is_list(v) then
+        backfill(target[k], v)
+      end
     end
   end
+  backfill(data, M.data_json_format)
 
   return data
 end

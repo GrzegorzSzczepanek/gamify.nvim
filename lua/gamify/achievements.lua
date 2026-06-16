@@ -30,7 +30,7 @@ local achievement_definitions = {
     description = 'Use the Gamify command for the first time',
     xp = 100,
     check = function()
-      return storage.load_data().gamify_cmd_count == 0
+      return (storage.load_data().gamify_cmd_count or 0) >= 1
     end,
   },
   {
@@ -113,7 +113,7 @@ local achievement_definitions = {
     xp = 1000,
     check = function()
       local data = storage.load_data()
-      return (data.code_nights or 0) == 4
+      return (data.code_nights or 0) >= 5
     end,
   },
 
@@ -123,7 +123,7 @@ local achievement_definitions = {
     xp = 1000,
     check = function()
       local data = storage.load_data()
-      return (data.code_mornings or 0) == 4
+      return (data.code_mornings or 0) >= 5
     end,
   },
 
@@ -211,30 +211,82 @@ function M.get_achievements_table_length()
   return utils.get_table_length(achievement_definitions)
 end
 
+M.definitions = achievement_definitions
+
+-- Closest locked milestone, for the dashboard's "progress to next" bar.
+function M.next_progress()
+  local data = storage.load_data()
+  local lines = data.lines_written or 0
+  local commits = #(data.commit_hashes or {})
+  local streak = data.day_streak or 1
+  local time = data.total_time or 0
+
+  local measurable = {
+    { 'Hundred lines', lines, 100 },
+    { 'Thousand Lines', lines, 1000 },
+    { 'Two Thousand Lines', lines, 2000 },
+    { 'Five Thousand Lines', lines, 5000 },
+    { 'Ten Thousand Lines', lines, 10000 },
+    { 'Twenty Five Thousand Lines', lines, 25000 },
+    { 'Git Apprentice', commits, 10 },
+    { 'Git Journeyman', commits, 50 },
+    { 'Git Master', commits, 100 },
+    { 'Commit Deity', commits, 500 },
+    { 'Weekly Streak', streak, 7 },
+    { 'Two Weeks Streak', streak, 14 },
+    { 'One Month Streak', streak, 30 },
+    { 'Vim enjoyer', time, 100 },
+    { 'Get a Life!', time, 200 },
+  }
+
+  local best
+  for _, m in ipairs(measurable) do
+    local name, current, target = m[1], m[2], m[3]
+    if not data.achievements[name] and current < target then
+      local percent = (current / target) * 100
+      if not best or percent > best.percent then
+        best = { name = name, current = current, target = target, percent = percent }
+      end
+    end
+  end
+  return best
+end
+
 function M.check_all_achievements()
   local data = storage.load_data()
-  local delay = 0
+  local newly_unlocked = {}
 
   for _, achievement in ipairs(achievement_definitions) do
     local already_unlocked = data.achievements[achievement.name] ~= nil
-    local meets_requirement = achievement.check()
-
-    if meets_requirement and not already_unlocked then
+    if not already_unlocked and achievement.check() then
       logic.add_xp(achievement.xp, achievement)
-
-      vim.defer_fn(function()
-        ui.show_special_popup(achievement.name)
-      end, delay)
-
-      delay = delay + 3000
+      table.insert(newly_unlocked, achievement)
     end
+  end
+
+  if #newly_unlocked == 0 then
+    return
+  end
+
+  if #newly_unlocked == 1 then
+    ui.show_special_popup(newly_unlocked[1].name)
+  else
+    local names = {}
+    for _, a in ipairs(newly_unlocked) do
+      table.insert(names, '• ' .. a.name)
+    end
+    ui.show_popup('Unlocked ' .. #newly_unlocked .. ' achievements!\n' .. table.concat(names, '\n'), 'Achievements', 'top_right')
+    ui.show_falling_confetti(30, 3000)
   end
 end
 
-function M.track_error_fixes()
-  local previous_error_count = 0
+local buffer_error_counts = {}
 
-  local diagnostics = vim.diagnostic.get(0)
+function M.track_error_fixes()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local previous_error_count = buffer_error_counts[bufnr] or 0
+
+  local diagnostics = vim.diagnostic.get(bufnr)
   local current_error_count = 0
 
   for _, diag in ipairs(diagnostics) do
@@ -248,9 +300,14 @@ function M.track_error_fixes()
     local data = storage.load_data()
     data.errors_fixed = (data.errors_fixed or 0) + resolved_errors
     storage.save_data(data)
+
+    local per = require('gamify.config').get().xp.per_error_fixed
+    logic.add_xp(resolved_errors * per)
+    require('gamify.quests').on_errors_fixed(resolved_errors)
+    ui.show_popup('Fixed ' .. resolved_errors .. ' error(s)! + ' .. (resolved_errors * per) .. ' XP', 'Bug Hunter', 'bottom_left')
   end
 
-  previous_error_count = current_error_count
+  buffer_error_counts[bufnr] = current_error_count
 end
 
 return M
