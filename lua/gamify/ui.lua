@@ -126,7 +126,7 @@ function M.show_status_window(all_achievements_len)
     '',
     center_text('─── Menu ───', ui_width),
     center_text('(a) Achievements  (s) Lang Stats  (c) Challenges  (h) Heatmap  (p) Share', ui_width),
-    center_text('(g) Snake  (m) Saper  (u) Sudoku  (q) Quit', ui_width),
+    center_text('(g) Snake  (m) Saper  (u) Sudoku  (t) Gomoku  (q) Quit', ui_width),
   })
 
   local opts = {
@@ -160,6 +160,7 @@ function M.show_status_window(all_achievements_len)
   vim.keymap.set('n', 'g', action(function() require('gamify.games').start_snake() end), { buffer = buffer })
   vim.keymap.set('n', 'm', action(function() require('gamify.games').start_minesweeper() end), { buffer = buffer })
   vim.keymap.set('n', 'u', action(function() require('gamify.games').start_sudoku() end), { buffer = buffer })
+  vim.keymap.set('n', 't', action(function() require('gamify.gomoku').start_local() end), { buffer = buffer })
   vim.keymap.set('n', 'q', action(function() end), { buffer = buffer })
   vim.keymap.set('n', '<Esc>', action(function() end), { buffer = buffer })
 

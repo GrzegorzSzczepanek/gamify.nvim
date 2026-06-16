@@ -22,7 +22,7 @@ Track your activity, earn XP, level up, and unlock achievements while you code.
 - **Prestige System**: Hit the level cap, then prestige for a permanent XP bonus.
 - **Activity Heatmap**: A GitHub-style contribution graph of your coding, right inside Neovim (`:GamifyHeatmap`).
 - **Share Card**: Generate a shareable ASCII character card and yank it to your clipboard (`:GamifyShare`).
-- **Mini-Games**: Take a break with built-in games like **Vim Snake**, **Saper (Minesweeper)**, and **Sudoku**.
+- **Mini-Games**: Take a break with built-in games like **Vim Snake**, **Saper (Minesweeper)**, **Sudoku**, and **Gomoku** (5-in-a-row, with local & LAN play).
 - **Gamify Katas**: Solve 8 algorithmic challenges (Codewars-style) directly in your editor, with a bonus **kata of the day**.
 - **Clean Code Bonus**: Get rewarded for saving files with zero errors (once per buffer, no grinding).
 - **Achievement System**: 21 unique milestones with confetti effects and popups.
@@ -83,6 +83,7 @@ The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution bu
 - **`:GamifySnake`** – Launch the **Vim Snake** mini-game.
 - **`:GamifySaper`** – Launch the **Saper (Minesweeper)** mini-game.
 - **`:GamifySudoku`** – Launch the **Sudoku** mini-game.
+- **`:Gomoku`** – Play **Gomoku** (5-in-a-row on 20×20) locally; `:Gomoku host [port]` / `:Gomoku join <ip> [port]` for LAN.
 - **`:GamifyChallenges`** – Start solving **Gamify Katas**.
 - **`:GamifyHeatmap`** – View your activity heatmap.
 - **`:GamifyShare`** – Generate a shareable character card.
@@ -108,6 +109,21 @@ Classic Minesweeper directly in your editor. Type `:GamifySaper`.
 Classic Sudoku with difficulty levels. Type `:GamifySudoku`.
 - **Controls**: `h, j, k, l` to move, `1-9` to enter numbers, `d` to change difficulty, `0/x` to clear.
 - **Reward**: Solve the puzzle to earn up to **500 XP**!
+
+### Gomoku (5-in-a-row)
+Tic-tac-toe's big sibling: a **20×20** board where you win by lining up **five** stones
+horizontally, vertically, or diagonally.
+- **Controls**: `h, j, k, l` to move the cursor, `<Enter>`/`<Space>` to place a stone, `r` to rematch (local), `q` to quit.
+- **Reward**: Win a game to earn **150 XP**.
+
+**Local (one machine):** `:Gomoku` — two players take turns as X and O on the same Neovim.
+
+**LAN (two machines, same network):** play over TCP, no extra dependencies.
+- On the first machine: `:Gomoku host 5050` (it waits for an opponent on port `5050`).
+- On the second machine: `:Gomoku join <host-ip> 5050`.
+
+The host plays **X** and moves first; the client plays **O**. Moves sync automatically.
+You may need to allow the chosen port through both machines' firewalls.
 
 ---
 

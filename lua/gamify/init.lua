@@ -59,6 +59,26 @@ local function register_commands()
     require('gamify.games').start_sudoku()
   end, {})
 
+  vim.api.nvim_create_user_command('Gomoku', function(args)
+    local gomoku = require 'gamify.gomoku'
+    local sub = args.fargs[1]
+    if sub == 'host' then
+      gomoku.host(args.fargs[2])
+    elseif sub == 'join' then
+      gomoku.join(args.fargs[2], args.fargs[3])
+    else
+      gomoku.start_local()
+    end
+  end, {
+    nargs = '*',
+    complete = function(_, line)
+      if line:match '%sGomoku%s+%S*$' then
+        return { 'host', 'join' }
+      end
+      return {}
+    end,
+  })
+
   vim.api.nvim_create_user_command('GamifyHeatmap', function()
     ui.show_heatmap()
   end, {})
