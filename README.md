@@ -36,39 +36,27 @@ Track your activity, earn XP, level up, and unlock achievements while you code.
 
 ### The Dashboard
 Level, XP bar, role, prestige, focus combo, progress to your next achievement, daily quests, and the menu — all from `:Gamify`.
+<img width="1700" height="1013" alt="image" src="https://github.com/user-attachments/assets/2ee9536d-0c8e-4eb1-88f1-8248df3b1132" />
 
-<!-- TODO: screenshot of :Gamify dashboard -->
-<!-- ![Dashboard](docs/screenshots/dashboard.png) -->
-
-### Daily Quests
-Three randomized objectives per day with live progress and a completion bonus.
-
-<!-- TODO: screenshot of the Daily Quests section on the dashboard -->
-<!-- ![Daily Quests](docs/screenshots/quests.png) -->
 
 ### Activity Heatmap
 A GitHub-style contribution graph of your coding, via `:GamifyHeatmap`.
+![Uploading image.png…]()
 
-<!-- TODO: screenshot of :GamifyHeatmap -->
-<!-- ![Heatmap](docs/screenshots/heatmap.png) -->
 
 ### Share Card
 A shareable ASCII character card you can yank to your clipboard, via `:GamifyShare`.
+<img width="436" height="322" alt="image" src="https://github.com/user-attachments/assets/1373860f-9e7f-4eda-b5f8-8537b8bdb1e1" />
 
-<!-- TODO: screenshot of :GamifyShare card -->
-<!-- ![Share Card](docs/screenshots/share-card.png) -->
 
-### Vim Snake
-<!-- TODO: screenshot of :GamifySnake -->
-<!-- ![Snake](docs/screenshots/snake.png) -->
+### Screenshots
+<img width="2028" height="1594" alt="image" src="https://github.com/user-attachments/assets/a1505784-f629-40cd-9bf4-1af510c990bb" />
+
 
 ### Gamify Katas
 The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution buffer.
-
-<!-- TODO: screenshot of :GamifyChallenges -->
-<!-- ![Katas](docs/screenshots/katas.png) -->
-
-> Screenshots are placeholders. Drop PNGs/GIFs into `docs/screenshots/` and uncomment the image lines above.
+<img width="480" height="318" alt="image" src="https://github.com/user-attachments/assets/77e44a98-186c-460f-8a74-683acdd2c955" />
+<img width="716" height="422" alt="image" src="https://github.com/user-attachments/assets/5cb8ecec-2984-4cd9-9c75-339a900bca4a" />
 
 ---
 
