@@ -30,8 +30,8 @@ M.defaults = {
 
   -- level = floor(1 + A * (xp ^ B))
   leveling = {
-    A = 0.001,
-    B = 1.02,
+    A = 0.1,
+    B = 0.5,
   },
 
   prestige = {
