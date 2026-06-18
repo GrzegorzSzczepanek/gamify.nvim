@@ -22,6 +22,7 @@ Track your activity, earn XP, level up, and unlock achievements while you code.
 - **Prestige System**: Hit the level cap, then prestige for a permanent XP bonus.
 - **Activity Heatmap**: A GitHub-style contribution graph of your coding, right inside Neovim (`:GamifyHeatmap`).
 - **Share Card**: Generate a shareable ASCII character card and yank it to your clipboard (`:GamifyShare`).
+- **Avatar Companion**: Design your own character (`:GamifyAvatar`) and pin it to a screen corner with cute idle animations.
 - **Mini-Games**: Take a break with built-in games like **Vim Snake**, **Saper (Minesweeper)**, **Sudoku**, and **Gomoku** (5-in-a-row, with local & LAN play).
 - **Gamify Katas**: Solve 8 algorithmic challenges (Codewars-style) directly in your editor, with a bonus **kata of the day**.
 - **Clean Code Bonus**: Get rewarded for saving files with zero errors (once per buffer, no grinding).
@@ -64,6 +65,14 @@ The 20×20 board in action — local hot-seat or LAN multiplayer (`:Gomoku`).
 <img width="1710" height="1112" alt="image" src="https://github.com/user-attachments/assets/a8c80b52-dcd6-4a3d-bb96-8db5358a7fde" />
 
 
+### Avatar Companion
+Build your own character with `:GamifyAvatar` and let it sit in the corner with cute idle animations (blink, bounce, wave).
+<!-- TODO: screenshot of the avatar generator -->
+<!-- ![Avatar generator](docs/screenshots/avatar-generator.png) -->
+<!-- TODO: screenshot of the corner companion -->
+<!-- ![Avatar companion](docs/screenshots/avatar-companion.png) -->
+
+
 ---
 
 ## 📦 Installation & Usage
@@ -92,6 +101,7 @@ The 20×20 board in action — local hot-seat or LAN multiplayer (`:Gomoku`).
 - **`:Gomoku`** – Play **Gomoku** (5-in-a-row on 20×20) locally; `:Gomoku host [port]` / `:Gomoku join <ip> [port]` for LAN.
 - **`:GamifyChallenges`** – Start solving **Gamify Katas**.
 - **`:GamifyHeatmap`** – View your activity heatmap.
+- **`:GamifyAvatar`** – Open the **avatar generator**; `:GamifyAvatar show`/`hide`/`toggle` control the corner companion, `:GamifyAvatar anim on|off` toggles animations, `:GamifyAvatar corner <pos>` moves it.
 - **`:GamifyShare`** – Generate a shareable character card.
 - **`:GamifyStats`** – Quick stats line via `vim.notify`.
 - **`:GamifyPrestige`** – Prestige (resets XP for a permanent bonus).
@@ -272,6 +282,12 @@ require('gamify').setup {
     popups = true,
     xp_popups = true,
     popup_timeout_ms = 5000,
+  },
+  avatar = {
+    enabled = true,        -- register avatar commands and allow the companion
+    show_on_start = true,  -- restore the corner companion across sessions
+    animations = true,     -- idle animations (blink, bounce, wave)
+    transparent = true,    -- no background (shows through on transparent terminals)
   },
 }
 ```
