@@ -83,6 +83,37 @@ local function register_commands()
     ui.show_heatmap()
   end, {})
 
+  vim.api.nvim_create_user_command('GamifyAvatar', function(args)
+    local avatar = require 'gamify.avatar'
+    local sub = args.fargs[1]
+    if sub == 'show' then
+      avatar.set_enabled(true)
+    elseif sub == 'hide' then
+      avatar.set_enabled(false)
+    elseif sub == 'toggle' then
+      local on = avatar.toggle()
+      vim.notify('Avatar ' .. (on and 'shown' or 'hidden'), vim.log.levels.INFO, { title = 'Gamify' })
+    elseif sub == 'anim' then
+      avatar.set_animations(args.fargs[2] ~= 'off')
+    elseif sub == 'corner' then
+      avatar.set_corner(args.fargs[2])
+    else -- default / 'edit' / 'create' open the generator
+      avatar.open_generator()
+    end
+  end, {
+    nargs = '*',
+    complete = function(_, line)
+      if line:match '%scorner%s+%S*$' then
+        return { 'top_left', 'top_right', 'bottom_left', 'bottom_right' }
+      elseif line:match '%sanim%s+%S*$' then
+        return { 'on', 'off' }
+      elseif line:match '%sGamifyAvatar%s+%S*$' then
+        return { 'edit', 'show', 'hide', 'toggle', 'anim', 'corner' }
+      end
+      return {}
+    end,
+  })
+
   vim.api.nvim_create_user_command('GamifyShare', function()
     ui.show_share_card()
   end, {})
@@ -179,6 +210,10 @@ function M.setup(opts)
 
   register_commands()
   register_autocommands()
+
+  if config.get().avatar.enabled and config.get().avatar.show_on_start then
+    require('gamify.avatar').restore()
+  end
 end
 
 return M
