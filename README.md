@@ -22,6 +22,7 @@ Track your activity, earn XP, level up, and unlock achievements while you code.
 - **Prestige System**: Hit the level cap, then prestige for a permanent XP bonus.
 - **Activity Heatmap**: A GitHub-style contribution graph of your coding, right inside Neovim (`:GamifyHeatmap`).
 - **Share Card**: Generate a shareable ASCII character card and yank it to your clipboard (`:GamifyShare`).
+- **Avatar Companion**: Design your own character (`:GamifyAvatar`) and pin it to a screen corner with cute idle animations.
 - **Mini-Games**: Take a break with built-in games like **Vim Snake**, **Saper (Minesweeper)**, **Sudoku**, and **Gomoku** (5-in-a-row, with local & LAN play).
 - **Gamify Katas**: Solve 8 algorithmic challenges (Codewars-style) directly in your editor, with a bonus **kata of the day**.
 - **Clean Code Bonus**: Get rewarded for saving files with zero errors (once per buffer, no grinding).
@@ -42,6 +43,15 @@ Level, XP bar, role, prestige, focus combo, progress to your next achievement, d
 ### Screenshots
 <img width="2028" height="1594" alt="image" src="https://github.com/user-attachments/assets/a1505784-f629-40cd-9bf4-1af510c990bb" />
 
+### Activity Heatmap
+A GitHub-style contribution graph of your coding, via `:GamifyHeatmap`.
+<img width="524" height="379" alt="image" src="https://github.com/user-attachments/assets/c7a2c797-069f-48e6-9b49-8a28edc2ba5e" />
+
+
+### Share Card
+A shareable ASCII character card you can yank to your clipboard, via `:GamifyShare`.
+<img width="436" height="322" alt="image" src="https://github.com/user-attachments/assets/1373860f-9e7f-4eda-b5f8-8537b8bdb1e1" />
+
 
 ### Gamify Katas
 The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution buffer.
@@ -52,6 +62,12 @@ The kata picker (with the ⭐ kata of the day) and the in-editor Lua solution bu
 ### Gomoku (5-in-a-row)
 The 20×20 board in action — local hot-seat or LAN multiplayer (`:Gomoku`).
 <img width="1710" height="1112" alt="image" src="https://github.com/user-attachments/assets/a8c80b52-dcd6-4a3d-bb96-8db5358a7fde" />
+
+
+### Avatar Companion
+Build your own character with `:GamifyAvatar` and let it sit in the corner with cute idle animations (blink, bounce, wave).
+<img width="450" height="400" alt="image" src="https://github.com/user-attachments/assets/295530ed-a626-4b3b-9723-9849767d38bf" />
+<img width="264" height="358" alt="Screen Recording 2026-06-18 at 15 04 52" src="https://github.com/user-attachments/assets/22365663-19c2-4942-bc5d-ca380fc40b73" />
 
 
 ---
@@ -82,6 +98,7 @@ The 20×20 board in action — local hot-seat or LAN multiplayer (`:Gomoku`).
 - **`:Gomoku`** – Play **Gomoku** (5-in-a-row on 20×20) locally; `:Gomoku host [port]` / `:Gomoku join <ip> [port]` for LAN.
 - **`:GamifyChallenges`** – Start solving **Gamify Katas**.
 - **`:GamifyHeatmap`** – View your activity heatmap.
+- **`:GamifyAvatar`** – Open the **avatar generator**; `:GamifyAvatar show`/`hide`/`toggle` control the corner companion, `:GamifyAvatar anim on|off` toggles animations, `:GamifyAvatar corner <pos>` moves it.
 - **`:GamifyShare`** – Generate a shareable character card.
 - **`:GamifyStats`** – Quick stats line via `vim.notify`.
 - **`:GamifyPrestige`** – Prestige (resets XP for a permanent bonus).
@@ -262,6 +279,12 @@ require('gamify').setup {
     popups = true,
     xp_popups = true,
     popup_timeout_ms = 5000,
+  },
+  avatar = {
+    enabled = true,        -- register avatar commands and allow the companion
+    show_on_start = true,  -- restore the corner companion across sessions
+    animations = true,     -- idle animations (blink, bounce, wave)
+    transparent = true,    -- no background (shows through on transparent terminals)
   },
 }
 ```

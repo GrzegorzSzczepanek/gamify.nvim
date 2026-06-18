@@ -7,15 +7,15 @@ function M.show_xp_popup(amount)
   local bufnr = vim.api.nvim_get_current_buf()
   local cursor = vim.api.nvim_win_get_cursor(0)
   local line = cursor[1] - 1
-  
-  local ns_id = vim.api.nvim_create_namespace('gamify_xp')
+
+  local ns_id = vim.api.nvim_create_namespace 'gamify_xp'
   local opts = {
-    virt_text = {{ "+" .. amount .. " XP", "String" }},
+    virt_text = { { '+' .. amount .. ' XP', 'String' } },
     virt_text_pos = 'eol',
   }
-  
+
   local id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, line, 0, opts)
-  
+
   vim.defer_fn(function()
     if vim.api.nvim_buf_is_valid(bufnr) then
       vim.api.nvim_buf_del_extmark(bufnr, ns_id, id)
@@ -43,7 +43,8 @@ function M.show_status_window(all_achievements_len)
   local days = math.floor(total_time / 24)
   local hours = math.floor(total_time % 24)
   local minutes = math.floor((total_time - math.floor(total_time)) * 60)
-  local time_message = string.format('You have spent %d days, %d hours, and %d minutes in Neovim!', days, hours, minutes)
+  local time_message =
+    string.format('You have spent %d days, %d hours, and %d minutes in Neovim!', days, hours, minutes)
 
   local user_achievements_len = utils.get_table_length(data.achievements)
 
@@ -54,7 +55,8 @@ function M.show_status_window(all_achievements_len)
 
   local current_level_xp = logic.xp_for_level(level)
   local next_level_xp = logic.xp_for_level(level + 1)
-  local progress = next_level_xp > current_level_xp and (xp - current_level_xp) / (next_level_xp - current_level_xp) or 0
+  local progress = next_level_xp > current_level_xp and (xp - current_level_xp) / (next_level_xp - current_level_xp)
+    or 0
   progress = math.max(0, math.min(1, progress))
 
   local bar_width = 50
@@ -73,7 +75,7 @@ function M.show_status_window(all_achievements_len)
   -- block with one shared pad, so the figure never breaks apart across lines.
   local banner = {
     '  ____                  _  __        ',
-    " / ___|  __ _ _ __ ___ (_)/ _|_   _  ",
+    ' / ___|  __ _ _ __ ___ (_)/ _|_   _  ',
     "| |  _  / _` | '_ ` _ \\| | |_| | | | ",
     '| |_| || (_| | | | | | | |  _| |_| | ',
     ' \\____| \\__,_|_| |_| |_|_|_|  \\__, | ',
@@ -109,17 +111,24 @@ function M.show_status_window(all_achievements_len)
     local nb_width = 24
     local nf = math.floor((nxt.percent / 100) * nb_width)
     local nbar = string.rep('█', nf) .. string.rep('░', nb_width - nf)
-    table.insert(lines, center_text(string.format('Next: %s  %s %d/%d', nxt.name, nbar, nxt.current, nxt.target), ui_width))
+    table.insert(
+      lines,
+      center_text(string.format('Next: %s  %s %d/%d', nxt.name, nbar, nxt.current, nxt.target), ui_width)
+    )
   end
 
   vim.list_extend(lines, {
     '',
     center_text('─── High Scores ───', ui_width),
-    center_text(string.format('Snake: %d pts | Saper: %s | Sudoku: %s',
-      data.high_scores.snake or 0,
-      data.high_scores.saper and (data.high_scores.saper .. "s") or "N/A",
-      data.high_scores.sudoku and (data.high_scores.sudoku .. "s") or "N/A"
-    ), ui_width),
+    center_text(
+      string.format(
+        'Snake: %d pts | Saper: %s | Sudoku: %s',
+        data.high_scores.snake or 0,
+        data.high_scores.saper and (data.high_scores.saper .. 's') or 'N/A',
+        data.high_scores.sudoku and (data.high_scores.sudoku .. 's') or 'N/A'
+      ),
+      ui_width
+    ),
     '',
     center_text('─── Daily Quests ───', ui_width),
   })
@@ -130,7 +139,10 @@ function M.show_status_window(all_achievements_len)
   else
     for _, q in ipairs(quests) do
       local mark = q.done and '✅' or '⬜'
-      table.insert(lines, center_text(string.format('%s %s  (%d/%d, +%d XP)', mark, q.description, q.progress, q.target, q.xp), ui_width))
+      table.insert(
+        lines,
+        center_text(string.format('%s %s  (%d/%d, +%d XP)', mark, q.description, q.progress, q.target, q.xp), ui_width)
+      )
     end
   end
 
@@ -138,7 +150,7 @@ function M.show_status_window(all_achievements_len)
     '',
     center_text('─── Menu ───', ui_width),
     center_text('(a) Achievements  (s) Lang Stats  (c) Challenges  (h) Heatmap  (p) Share', ui_width),
-    center_text('(g) Snake  (m) Saper  (u) Sudoku  (t) Gomoku  (q) Quit', ui_width),
+    center_text('(g) Snake  (m) Saper  (u) Sudoku  (t) Gomoku  (v) Avatar  (q) Quit', ui_width),
   })
 
   local opts = {
@@ -164,15 +176,86 @@ function M.show_status_window(all_achievements_len)
     end
   end
 
-  vim.keymap.set('n', 'a', action(function() M.show_achievements() end), { buffer = buffer })
-  vim.keymap.set('n', 's', action(function() M.show_languages_ui() end), { buffer = buffer })
-  vim.keymap.set('n', 'c', action(function() require('gamify.challenges').show_challenges_menu() end), { buffer = buffer })
-  vim.keymap.set('n', 'h', action(function() M.show_heatmap() end), { buffer = buffer })
-  vim.keymap.set('n', 'p', action(function() M.show_share_card() end), { buffer = buffer })
-  vim.keymap.set('n', 'g', action(function() require('gamify.games').start_snake() end), { buffer = buffer })
-  vim.keymap.set('n', 'm', action(function() require('gamify.games').start_minesweeper() end), { buffer = buffer })
-  vim.keymap.set('n', 'u', action(function() require('gamify.games').start_sudoku() end), { buffer = buffer })
-  vim.keymap.set('n', 't', action(function() require('gamify.gomoku').start_local() end), { buffer = buffer })
+  vim.keymap.set(
+    'n',
+    'a',
+    action(function()
+      M.show_achievements()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    's',
+    action(function()
+      M.show_languages_ui()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    'c',
+    action(function()
+      require('gamify.challenges').show_challenges_menu()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    'h',
+    action(function()
+      M.show_heatmap()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    'p',
+    action(function()
+      M.show_share_card()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    'g',
+    action(function()
+      require('gamify.games').start_snake()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    'm',
+    action(function()
+      require('gamify.games').start_minesweeper()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    'u',
+    action(function()
+      require('gamify.games').start_sudoku()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    't',
+    action(function()
+      require('gamify.gomoku').start_local()
+    end),
+    { buffer = buffer }
+  )
+  vim.keymap.set(
+    'n',
+    'v',
+    action(function()
+      require('gamify.avatar').open_generator()
+    end),
+    { buffer = buffer }
+  )
   vim.keymap.set('n', 'q', action(function() end), { buffer = buffer })
   vim.keymap.set('n', '<Esc>', action(function() end), { buffer = buffer })
 
@@ -261,186 +344,279 @@ function M.show_popup(text, title, corner)
   end, 5000)
 end
 
+-- A small palette so each language bar gets its own color.
+local LANG_COLORS = {
+  '#39d353',
+  '#58a6ff',
+  '#f778ba',
+  '#e3b341',
+  '#ff7b72',
+  '#a371f7',
+  '#56d4dd',
+  '#ffa657',
+  '#7ee787',
+  '#d2a8ff',
+}
+
 function M.show_languages_ui()
   local data = logic.get_data()
   local lines_per_lang = data.lines_written_in_specified_langs or {}
 
-  local lang_lines = {}
+  local langs = {}
+  local total = 0
   for lang, lines in pairs(lines_per_lang) do
     if lang ~= 'Unknown' and lines > 0 then
-      table.insert(lang_lines, { lang = lang, lines = lines })
+      table.insert(langs, { lang = lang, lines = lines })
+      total = total + lines
     end
   end
-
-  table.sort(lang_lines, function(a, b)
+  table.sort(langs, function(a, b)
     return a.lines > b.lines
   end)
 
-  local ui_width = 100
-  local max_bar_length = ui_width - 35
-  local max_lines = lang_lines[1] and lang_lines[1].lines or 1
+  local ui_width = 72
+  local name_w = 12
+  for _, l in ipairs(langs) do
+    name_w = math.max(name_w, #l.lang)
+  end
+  name_w = math.min(name_w, 16)
+  local bar_w = ui_width - name_w - 22
+  local max_lines = langs[1] and langs[1].lines or 1
 
-  local max_lang_length = 0
-  for _, lang_data in ipairs(lang_lines) do
-    max_lang_length = math.max(max_lang_length, #lang_data.lang)
+  -- define one highlight per palette slot + ensure highlights survive themes
+  local function ensure_lang_hl()
+    local cmds = {}
+    for i, c in ipairs(LANG_COLORS) do
+      cmds[#cmds + 1] = string.format('highlight default GamifyLangBar%d guifg=%s', i, c)
+    end
+    cmds[#cmds + 1] = 'highlight default GamifyLangTitle gui=bold guifg=#58a6ff'
+    cmds[#cmds + 1] = 'highlight default GamifyLangTrack guifg=#30363d'
+    vim.cmd(table.concat(cmds, '\n'))
+  end
+  ensure_lang_hl()
+
+  local medals = { '🥇', '🥈', '🥉' }
+  local lines = {}
+  local marks = {} -- { line0, col0, col1, group }
+
+  table.insert(lines, center_text('📊  Most Used Languages  📊', ui_width))
+  marks[#marks + 1] = { #lines - 1, 0, -1, 'GamifyLangTitle' }
+  table.insert(lines, center_text(string.format('%d lines across %d languages', total, #langs), ui_width))
+  marks[#marks + 1] = { #lines - 1, 0, -1, 'Comment' }
+  table.insert(lines, '')
+
+  if #langs == 0 then
+    table.insert(lines, center_text('No data available yet — start coding!', ui_width))
   end
 
-  local ui_lines = {
-    center_text('📊 Most Used Languages 📊', ui_width),
-    '',
-  }
+  for i, l in ipairs(langs) do
+    local filled = math.max(1, math.floor((l.lines / max_lines) * bar_w))
+    local pct = total > 0 and (l.lines / total * 100) or 0
+    local medal = medals[i] or '  '
+    local name = l.lang
+    if #name > name_w then
+      name = name:sub(1, name_w - 1) .. '…'
+    end
 
-  for _, lang_data in ipairs(lang_lines) do
-    local bar_length = math.floor((lang_data.lines / max_lines) * max_bar_length)
-    local bar = string.rep('█', bar_length)
-    local line_text = string.format('%-' .. max_lang_length .. 's | %s ~ %d lines', lang_data.lang, bar, lang_data.lines)
-    table.insert(ui_lines, line_text)
+    local prefix = string.format('%s %-' .. name_w .. 's ', medal, name)
+    local bar = string.rep('█', filled)
+    local track = string.rep('░', bar_w - filled)
+    local suffix = string.format(' %5d  %4.1f%%', l.lines, pct)
+    table.insert(lines, prefix .. bar .. track .. suffix)
+
+    local line0 = #lines - 1
+    local bar_start = #prefix
+    local color = 'GamifyLangBar' .. (((i - 1) % #LANG_COLORS) + 1)
+    marks[#marks + 1] = { line0, bar_start, bar_start + #bar, color }
+    marks[#marks + 1] = { line0, bar_start + #bar, bar_start + #bar + #track, 'GamifyLangTrack' }
   end
 
-  if #lang_lines == 0 then
-    table.insert(ui_lines, center_text('No data available.', ui_width))
-  end
+  table.insert(lines, '')
+  table.insert(lines, center_text('Press (b) to go back | (q) to close', ui_width))
+  marks[#marks + 1] = { #lines - 1, 0, -1, 'Comment' }
 
-  table.insert(ui_lines, '')
-  table.insert(ui_lines, center_text('Press (b) to go back | (q) to close.', ui_width))
-
+  local height = #lines + 2
   local buffer = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, ui_lines)
-
-  local opts = {
+  local window = vim.api.nvim_open_win(buffer, true, {
     style = 'minimal',
     relative = 'editor',
     width = ui_width,
-    height = #ui_lines + 2,
-    row = math.floor((vim.o.lines - (#ui_lines + 2)) / 2),
+    height = height,
+    row = math.floor((vim.o.lines - height) / 2),
     col = math.floor((vim.o.columns - ui_width) / 2),
     border = 'rounded',
-  }
+    title = ' Language Stats ',
+    title_pos = 'center',
+  })
+  vim.api.nvim_win_set_option(window, 'winhighlight', 'FloatBorder:GamifyLangTitle')
+  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
 
-  local window = vim.api.nvim_open_win(buffer, true, opts)
+  local ns = vim.api.nvim_create_namespace 'gamify_lang'
+  for _, m in ipairs(marks) do
+    vim.api.nvim_buf_add_highlight(buffer, ns, m[4], m[1], m[2], m[3])
+  end
 
   vim.keymap.set('n', 'b', function()
     vim.api.nvim_win_close(window, true)
     M.show_status_window(require('gamify.achievements').get_achievements_table_length())
   end, { buffer = buffer })
-
   vim.api.nvim_buf_set_keymap(buffer, 'n', '<Esc>', ':q<CR>', { noremap = true, silent = true })
   vim.api.nvim_buf_set_keymap(buffer, 'n', 'q', ':q<CR>', { noremap = true, silent = true })
   vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
 end
 
-local function create_achievement_box(name, description, box_width)
-  description = description or 'No description available'
-  name = name or 'Unnamed Achievement'
+local ACH_PER_PAGE = 8
 
-  local content = string.format('%s : %s', name, description)
-  content = center_text(content, box_width - 2) -- minus 2 for the box edges
-
-  local top = '╭' .. string.rep('─', box_width - 2) .. '╮'
-  local middle = '│' .. content .. '│'
-  local bottom = '╰' .. string.rep('─', box_width - 2) .. '╯'
-
-  return { top, middle, bottom }
-end
-
+-- Achievements: a clean card list showing BOTH unlocked and locked achievements,
+-- paginated. Unlocked rows glow gold; locked rows are dimmed with a 🔒.
 function M.show_achievements()
   local data = storage.load_data()
+  local defs = require('gamify.achievements').definitions
+  local unlocked = data.achievements or {}
 
-  local max_len = 0
-  if next(data.achievements) then
-    for name, description in pairs(data.achievements) do
-      local line = string.format('%s : %s', name, description)
-      local display_len = vim.fn.strdisplaywidth(line)
-      if display_len > max_len then
-        max_len = display_len
+  -- Build a unified list: unlocked first (by name), then locked.
+  local items = {}
+  for _, def in ipairs(defs) do
+    items[#items + 1] = {
+      name = def.name,
+      desc = def.description or '',
+      xp = def.xp or 0,
+      done = unlocked[def.name] ~= nil,
+    }
+  end
+  table.sort(items, function(a, b)
+    if a.done ~= b.done then
+      return a.done -- unlocked first
+    end
+    return a.name < b.name
+  end)
+
+  local got = 0
+  for _, it in ipairs(items) do
+    if it.done then
+      got = got + 1
+    end
+  end
+
+  local ui_width = 64
+  local inner = ui_width - 6 -- text area inside the card padding
+  local total_pages = math.max(1, math.ceil(#items / ACH_PER_PAGE))
+
+  local hl = {} -- { line0, group } applied after the buffer is built
+
+  local function render_page(page)
+    local lines = {}
+    local function add(s, group)
+      lines[#lines + 1] = s
+      if group then
+        hl[#hl + 1] = { #lines - 1, group }
       end
     end
-  else
-    max_len = #'None yet. Keep coding to unlock achievements!'
-  end
 
-  local box_width = max_len + 10
+    add(center_text('🏆  A C H I E V E M E N T S  🏆', ui_width), 'GamifyAchTitle')
+    add(center_text(string.format('Unlocked %d / %d', got, #items), ui_width), 'Comment')
+    add ''
 
-  local lines = {}
+    local start_i = (page - 1) * ACH_PER_PAGE + 1
+    local end_i = math.min(#items, start_i + ACH_PER_PAGE - 1)
+    for i = start_i, end_i do
+      local it = items[i]
+      local icon = it.done and '✓ ' or '🔒'
+      local name = it.name
+      if vim.fn.strdisplaywidth(name) > inner - 14 then
+        name = name:sub(1, inner - 17) .. '…'
+      end
+      local xp_tag = string.format('+%d XP', it.xp)
+      local pad = inner
+        - vim.fn.strdisplaywidth(icon)
+        - 1
+        - vim.fn.strdisplaywidth(name)
+        - vim.fn.strdisplaywidth(xp_tag)
+      pad = math.max(1, pad)
+      local title_row = '  ' .. icon .. ' ' .. name .. string.rep(' ', pad) .. xp_tag
+      add(title_row, it.done and 'GamifyAchDone' or 'GamifyAchLocked')
 
-  local heading = '🏆🏆🏆   A C H I E V E M E N T S   🏆🏆🏆'
-  heading = center_text(heading, box_width)
-  table.insert(lines, heading)
-  table.insert(lines, '')
-
-  if next(data.achievements) then
-    for name, description in pairs(data.achievements) do
-      local box_lines = create_achievement_box(name, description, box_width)
-      vim.list_extend(lines, box_lines)
-      table.insert(lines, '')
+      local desc = it.desc
+      if vim.fn.strdisplaywidth(desc) > inner - 4 then
+        desc = desc:sub(1, inner - 7) .. '…'
+      end
+      add('      ' .. desc, it.done and 'GamifyAchDesc' or 'GamifyAchLocked')
     end
-  else
-    table.insert(lines, center_text('None yet. Keep coding to unlock achievements!', box_width))
-    table.insert(lines, '')
+
+    add ''
+    add(
+      center_text(string.format('Page %d/%d   (h/l) page   (b) back   (q) close', page, total_pages), ui_width),
+      'Comment'
+    )
+    return lines
   end
 
-  table.insert(lines, center_text('Press (b) to go back | (q) to close', box_width))
-
-  local width = box_width + 8
-  local height = #lines + 2
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
-
+  local height = ACH_PER_PAGE * 2 + 6
   local buffer = vim.api.nvim_create_buf(false, true)
-  local final_lines = {}
-  local left_padding = math.floor((width - box_width) / 2)
-
-  for _, line_text in ipairs(lines) do
-    local indented_line = string.rep(' ', left_padding) .. line_text
-    table.insert(final_lines, indented_line)
-  end
-
-  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, final_lines)
-
   local win = vim.api.nvim_open_win(buffer, true, {
     style = 'minimal',
     relative = 'editor',
-    width = width,
+    width = ui_width,
     height = height,
-    row = row,
-    col = col,
+    row = math.floor((vim.o.lines - height) / 2),
+    col = math.floor((vim.o.columns - ui_width) / 2),
     border = 'rounded',
+    title = ' Achievements ',
+    title_pos = 'center',
   })
 
   vim.cmd [[
-    highlight AchievementTitle    gui=bold guifg=#FFD700
-    highlight AchievementBorder   guifg=#FFD700
-    highlight AchievementBoxBorder guifg=#FFD700
-    highlight AchievementBoxText  guifg=#FFFFFF
+    highlight default GamifyAchTitle  gui=bold guifg=#FFD700
+    highlight default GamifyAchDone   gui=bold guifg=#39d353
+    highlight default GamifyAchDesc   guifg=#9aa5b1
+    highlight default GamifyAchLocked guifg=#5a6270
   ]]
+  vim.api.nvim_win_set_option(win, 'winhighlight', 'FloatBorder:GamifyAchTitle')
 
-  vim.api.nvim_win_set_option(win, 'winhighlight', 'FloatBorder:AchievementBorder')
-
-  vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementTitle', 0, left_padding, -1)
-
-  local border_chars = { '╭', '╮', '╰', '╯', '─', '│' }
-  for i, line_text in ipairs(final_lines) do
-    if line_text:match '^[%s]*[╭╰│]' then
-      local start_col = 0
-      for col = 0, #line_text - 1 do
-        local c = line_text:sub(col + 1, col + 1)
-        if vim.tbl_contains(border_chars, c) then
-          vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementBoxBorder', i - 1, col, col + 1)
-        elseif c ~= ' ' then
-          vim.api.nvim_buf_add_highlight(buffer, -1, 'AchievementBoxText', i - 1, col, col + 1)
-        end
-      end
+  local page = 1
+  local function draw()
+    hl = {}
+    local lines = render_page(page)
+    vim.api.nvim_buf_set_option(buffer, 'modifiable', true)
+    vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+    local ns = vim.api.nvim_create_namespace 'gamify_ach'
+    vim.api.nvim_buf_clear_namespace(buffer, ns, 0, -1)
+    for _, h in ipairs(hl) do
+      vim.api.nvim_buf_add_highlight(buffer, ns, h[2], h[1], 0, -1)
     end
+    vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
   end
+  draw()
 
-  vim.keymap.set('n', 'b', function()
+  local function map(lhs, fn)
+    vim.keymap.set('n', lhs, fn, { buffer = buffer, nowait = true })
+  end
+  map('l', function()
+    page = page % total_pages + 1
+    draw()
+  end)
+  map('<Right>', function()
+    page = page % total_pages + 1
+    draw()
+  end)
+  map('h', function()
+    page = (page - 2) % total_pages + 1
+    draw()
+  end)
+  map('<Left>', function()
+    page = (page - 2) % total_pages + 1
+    draw()
+  end)
+  map('b', function()
     vim.api.nvim_win_close(win, true)
     M.show_status_window(require('gamify.achievements').get_achievements_table_length())
-  end, { buffer = buffer })
-
-  vim.api.nvim_buf_set_keymap(buffer, 'n', '<Esc>', ':q<CR>', { noremap = true, silent = true })
-  vim.api.nvim_buf_set_keymap(buffer, 'n', 'q', ':q<CR>', { noremap = true, silent = true })
-  vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
+  end)
+  map('q', function()
+    vim.api.nvim_win_close(win, true)
+  end)
+  map('<Esc>', function()
+    vim.api.nvim_win_close(win, true)
+  end)
 end
 
 function M.random_luck_popup()
@@ -588,60 +764,163 @@ function M.show_heatmap()
   local data = storage.load_data()
   local daily = data.daily_xp or {}
 
-  local levels = { '·', '░', '▒', '▓', '█' }
-  local function cell(xp)
-    if xp <= 0 then return levels[1] end
-    if xp < 50 then return levels[2] end
-    if xp < 150 then return levels[3] end
-    if xp < 400 then return levels[4] end
-    return levels[5]
+  -- GitHub-style 5-step green ramp. index 0 == empty.
+  local ramp = { '#2d333b', '#0e4429', '#006d32', '#26a641', '#39d353' }
+  -- Thresholds tuned so a day where you merely opened Neovim (a few dozen XP)
+  -- reads as faint, not as a bright "very active" cell.
+  local function level_of(xp)
+    if xp <= 0 then
+      return 0
+    end
+    if xp < 100 then
+      return 1
+    end
+    if xp < 300 then
+      return 2
+    end
+    if xp < 700 then
+      return 3
+    end
+    return 4
   end
 
   local weeks = 26
   local today_secs = os.time()
-  -- align to the most recent Sunday so each column is one week
+  -- align so the rightmost column ends on today; each column is one Sun..Sat week
   local wday = tonumber(os.date('%w', today_secs))
-  local grid = {} -- grid[row=0..6][col]
-  for r = 0, 6 do grid[r] = {} end
+  local grid = {} -- grid[row=0..6][col] = level (0..4) or nil for future
+  local key_grid = {} -- grid of YYYY-MM-DD keys for the col->month label pass
+  for r = 0, 6 do
+    grid[r] = {}
+    key_grid[r] = {}
+  end
 
   local total_days = weeks * 7
   local start_secs = today_secs - (total_days - 1 - wday) * 86400
   for i = 0, total_days - 1 do
     local day_secs = start_secs + i * 86400
+    local col = math.floor(i / 7) + 1
+    local row = tonumber(os.date('%w', day_secs))
     if day_secs <= today_secs then
       local key = os.date('%Y-%m-%d', day_secs)
-      local col = math.floor(i / 7)
-      local row = tonumber(os.date('%w', day_secs))
-      grid[row][col + 1] = cell(daily[key] or 0)
+      grid[row][col] = level_of(daily[key] or 0)
+      key_grid[row][col] = key
     end
   end
 
+  -- layout geometry
+  local label_w = 4 -- "Mon " gutter
+  local glyph = '■'
+  local cell_w = 2 -- glyph + trailing space
+  local left_pad = '    '
+  local board_w = label_w + weeks * cell_w
+  local ui_width = math.max(board_w, 44) + #left_pad
+
+  -- highlight groups: one per ramp step
+  local hl_cmds = {}
+  for lvl, color in ipairs(ramp) do
+    table.insert(hl_cmds, string.format('highlight GamifyHeat%d guifg=%s', lvl - 1, color))
+  end
+  vim.cmd(table.concat(hl_cmds, '\n'))
+
+  -- month label row: place each month's name at the column where it first appears,
+  -- writing into a fixed-width char buffer so labels stay aligned with the grid.
+  local names = { 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' }
+  local month_buf = {}
+  for i = 1, #left_pad + label_w + weeks * cell_w do
+    month_buf[i] = ' '
+  end
+  local last_month, last_label_end = nil, 0
+  for c = 1, weeks do
+    local key = key_grid[0][c] or key_grid[1][c] or key_grid[2][c]
+    if key then
+      local m = key:sub(6, 7)
+      if m ~= last_month then
+        last_month = m
+        local name = names[tonumber(m)]
+        local at = #left_pad + label_w + (c - 1) * cell_w + 1
+        if at > last_label_end then -- avoid overlapping the previous label
+          for i = 1, #name do
+            month_buf[at + i - 1] = name:sub(i, i)
+          end
+          last_label_end = at + #name
+        end
+      end
+    end
+  end
+  local month_line = table.concat(month_buf)
+
   local lines = {
-    center_text('📅 Activity Heatmap (last 26 weeks)', weeks + 8),
+    center_text('📅 Activity Calendar — last 26 weeks', ui_width),
     '',
+    month_line,
   }
+
+  -- record where each heat cell sits so we can color it after the buffer is built
+  local marks = {} -- { line = idx0, col = byte0, len = bytelen, lvl = n }
   local day_labels = { [1] = 'Mon', [3] = 'Wed', [5] = 'Fri' }
   for r = 0, 6 do
-    local row_str = (day_labels[r] or '   ') .. ' '
+    local row_str = left_pad .. (day_labels[r] or '   ') .. ' '
     for c = 1, weeks do
-      row_str = row_str .. (grid[r][c] or ' ')
+      local lvl = grid[r][c]
+      if lvl ~= nil then
+        local col0 = #row_str
+        row_str = row_str .. glyph
+        table.insert(marks, { line = #lines, col = col0, len = #glyph, lvl = lvl })
+        row_str = row_str .. ' '
+      else
+        row_str = row_str .. '  '
+      end
     end
     table.insert(lines, row_str)
   end
+
+  -- legend with colored squares
   table.insert(lines, '')
-  table.insert(lines, '    Less ' .. table.concat(levels, ' ') .. ' More')
+  local legend = left_pad .. 'Less '
+  local legend_marks = {}
+  for lvl = 0, 4 do
+    local col0 = #legend
+    legend = legend .. glyph
+    table.insert(legend_marks, { line = #lines, col = col0, len = #glyph, lvl = lvl })
+    legend = legend .. ' '
+  end
+  legend = legend .. 'More'
+  table.insert(lines, legend)
   table.insert(lines, '')
 
+  -- stats: active days, lifetime xp, current streak
   local active_days, total_xp = 0, 0
   for _, v in pairs(daily) do
-    if v > 0 then active_days = active_days + 1 end
+    if v > 0 then
+      active_days = active_days + 1
+    end
     total_xp = total_xp + v
   end
-  table.insert(lines, string.format('    Active days: %d   |   Lifetime XP logged: %d', active_days, total_xp))
+  local streak = 0
+  for d = 0, total_days do
+    local key = os.date('%Y-%m-%d', today_secs - d * 86400)
+    if (daily[key] or 0) > 0 then
+      streak = streak + 1
+    elseif d > 0 then
+      break -- today may be empty without breaking the streak
+    end
+  end
+  table.insert(lines, string.format('%sActive days: %d   |   Current streak: %d 🔥', left_pad, active_days, streak))
+  table.insert(lines, string.format('%sLifetime XP logged: %d', left_pad, total_xp))
   table.insert(lines, '')
-  table.insert(lines, center_text('Press (b) to go back | (q) to close', weeks + 8))
+  table.insert(lines, center_text('Press (b) to go back | (q) to close', ui_width))
 
-  open_simple_float(lines, weeks + 12)
+  local buffer = open_simple_float(lines, ui_width)
+
+  -- apply heat colors (highlights work even though the buffer is non-modifiable)
+  for _, mk in ipairs(marks) do
+    vim.api.nvim_buf_add_highlight(buffer, -1, 'GamifyHeat' .. mk.lvl, mk.line, mk.col, mk.col + mk.len)
+  end
+  for _, mk in ipairs(legend_marks) do
+    vim.api.nvim_buf_add_highlight(buffer, -1, 'GamifyHeat' .. mk.lvl, mk.line, mk.col, mk.col + mk.len)
+  end
+  vim.api.nvim_buf_add_highlight(buffer, -1, 'Title', 0, 0, -1)
 end
 
 function M.show_share_card()
@@ -658,7 +937,9 @@ function M.show_share_card()
       table.insert(langs, { lang = lang, n = n })
     end
   end
-  table.sort(langs, function(a, b) return a.n > b.n end)
+  table.sort(langs, function(a, b)
+    return a.n > b.n
+  end)
   local top = {}
   for i = 1, math.min(3, #langs) do
     table.insert(top, langs[i].lang)
@@ -669,13 +950,15 @@ function M.show_share_card()
   local W = 46
   local function row(text)
     local pad = W - 2 - vim.fn.strdisplaywidth(text)
-    if pad < 0 then pad = 0 end
+    if pad < 0 then
+      pad = 0
+    end
     return '┃ ' .. text .. string.rep(' ', pad) .. '┃'
   end
 
   local card = {
     '┏' .. string.rep('━', W - 1) .. '┓',
-    row('🎮 GAMIFY.NVIM CHARACTER CARD'),
+    row '🎮 GAMIFY.NVIM CHARACTER CARD',
     '┣' .. string.rep('━', W - 1) .. '┫',
     row('Role:    ' .. role .. prestige_str),
     row('Level:   ' .. lvl .. '   XP: ' .. math.floor(data.xp or 0)),

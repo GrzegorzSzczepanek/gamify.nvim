@@ -35,6 +35,13 @@ M.data_json_format = {
     saper = nil, -- best time in seconds
     sudoku = nil, -- best time in seconds
   },
+  avatar = {
+    name = 'Pixel',
+    parts = { hat = 1, face = 1, body = 1, pet = 1 },
+    enabled = false,
+    animations = true,
+    corner = 'bottom_right',
+  },
 }
 
 function M.load_data()

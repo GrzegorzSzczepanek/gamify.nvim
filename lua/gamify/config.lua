@@ -47,6 +47,13 @@ M.defaults = {
     popup_timeout_ms = 5000,
   },
 
+  avatar = {
+    enabled = true, -- master switch for the avatar feature/commands
+    show_on_start = true, -- restore the corner companion across sessions if it was on
+    animations = true, -- allow idle animations by default for new avatars
+    transparent = true, -- corner companion has no background (shows through on transparent terminals)
+  },
+
   use_vim_notify = false,
 }
 
