@@ -90,15 +90,15 @@ function M.start_snake()
     else
       local xp_reward = score * 10
       logic.add_xp(xp_reward)
-      
+
       -- Update high score
-      local storage = require('gamify.storage')
+      local storage = require 'gamify.storage'
       local data = storage.load_data()
       if score > (data.high_scores.snake or 0) then
         data.high_scores.snake = score
         storage.save_data(data)
         vim.schedule(function()
-          require('gamify.ui').show_popup("New High Score: " .. score .. "! 🏆", "Snake Record", "top_right")
+          require('gamify.ui').show_popup('New High Score: ' .. score .. '! 🏆', 'Snake Record', 'top_right')
         end)
       end
 
@@ -123,10 +123,18 @@ function M.start_snake()
     end
   end
 
-  vim.keymap.set('n', 'h', function() set_dir(-1, 0) end, { buffer = buf })
-  vim.keymap.set('n', 'l', function() set_dir(1, 0) end, { buffer = buf })
-  vim.keymap.set('n', 'k', function() set_dir(0, -1) end, { buffer = buf })
-  vim.keymap.set('n', 'j', function() set_dir(0, 1) end, { buffer = buf })
+  vim.keymap.set('n', 'h', function()
+    set_dir(-1, 0)
+  end, { buffer = buf })
+  vim.keymap.set('n', 'l', function()
+    set_dir(1, 0)
+  end, { buffer = buf })
+  vim.keymap.set('n', 'k', function()
+    set_dir(0, -1)
+  end, { buffer = buf })
+  vim.keymap.set('n', 'j', function()
+    set_dir(0, 1)
+  end, { buffer = buf })
   vim.keymap.set('n', '<Esc>', function()
     game_over = true
     if vim.api.nvim_win_is_valid(win) then
@@ -151,15 +159,17 @@ function M.start_minesweeper()
   local height = 10
   local mine_count = 15
   local buf = vim.api.nvim_create_buf(false, true)
+  local win_w = math.max(width * 2 + 4, 24)
+  local win_h = height + 4
   local win_opts = {
     relative = 'editor',
-    width = width * 5 + 4,
-    height = height * 2 + 2,
-    row = math.floor((vim.o.lines - (height * 2 + 2)) / 2),
-    col = math.floor((vim.o.columns - (width * 5 + 4)) / 2),
+    width = win_w,
+    height = win_h,
+    row = math.floor((vim.o.lines - win_h) / 2),
+    col = math.floor((vim.o.columns - win_w) / 2),
     style = 'minimal',
     border = 'rounded',
-    title = ' 💣 Saper (h,j,k,l, <CR>:Reveal, f:Flag) ',
+    title = ' 💣 Saper — h/j/k/l · ⏎ reveal · f flag ',
     title_pos = 'center',
   }
   local win = vim.api.nvim_open_win(buf, true, win_opts)
@@ -178,7 +188,9 @@ function M.start_minesweeper()
     board = {}
     for y = 1, height do
       board[y] = {}
-      for x = 1, width do board[y][x] = 0 end
+      for x = 1, width do
+        board[y][x] = 0
+      end
     end
 
     local placed = 0
@@ -197,7 +209,9 @@ function M.start_minesweeper()
           for dy = -1, 1 do
             for dx = -1, 1 do
               local ny, nx = y + dy, x + dx
-              if board[ny] and board[ny][nx] == -1 then count = count + 1 end
+              if board[ny] and board[ny][nx] == -1 then
+                count = count + 1
+              end
             end
           end
           board[y][x] = count
@@ -206,38 +220,88 @@ function M.start_minesweeper()
     end
   end
 
+  -- minesweeper highlight palette (defined once)
+  vim.cmd [[
+    highlight default GamifySaperHidden guifg=#585b70
+    highlight default GamifySaperDot    guifg=#45475a
+    highlight default GamifySaperFlag   gui=bold guifg=#f38ba8
+    highlight default GamifySaperMine   gui=bold guifg=#f38ba8
+    highlight default GamifySaperCursor gui=bold guifg=#1e1e2e guibg=#f9e2af
+    highlight default GamifySaperHeader gui=bold guifg=#cba6f7
+    highlight default GamifySaperN1 gui=bold guifg=#89b4fa
+    highlight default GamifySaperN2 gui=bold guifg=#a6e3a1
+    highlight default GamifySaperN3 gui=bold guifg=#f38ba8
+    highlight default GamifySaperN4 gui=bold guifg=#cba6f7
+    highlight default GamifySaperN5 gui=bold guifg=#fab387
+    highlight default GamifySaperN6 gui=bold guifg=#94e2d5
+    highlight default GamifySaperN7 gui=bold guifg=#f5c2e7
+    highlight default GamifySaperN8 gui=bold guifg=#bac2de
+  ]]
+  local ns = vim.api.nvim_create_namespace 'gamify_saper'
+  local LEAD = '  '
+
   local function draw()
-    local lines = { "" }
+    -- count flags for the mine counter
+    local flag_count = 0
     for y = 1, height do
-      local line = '  '
       for x = 1, width do
-        local char = '■ '
+        if flags[y] and flags[y][x] then
+          flag_count = flag_count + 1
+        end
+      end
+    end
+
+    local lines = {}
+    local marks = {} -- { line0, col0, col1, group }
+
+    -- header: 💣 remaining
+    table.insert(lines, string.format('  💣 %d   🚩 %d', math.max(0, mine_count - flag_count), flag_count))
+    marks[#marks + 1] = { 0, 0, -1, 'GamifySaperHeader' }
+    table.insert(lines, '')
+
+    for y = 1, height do
+      local line = LEAD
+      for x = 1, width do
+        local glyph, group
         if revealed[y] and revealed[y][x] then
-          if board[y][x] == -1 then char = '💣'
-          elseif board[y][x] == 0 then char = '· '
-          else char = board[y][x] .. ' ' end
+          local v = board[y][x]
+          if v == -1 then
+            glyph, group = '💣', 'GamifySaperMine'
+          elseif v == 0 then
+            glyph, group = '·', 'GamifySaperDot'
+          else
+            glyph, group = tostring(v), 'GamifySaperN' .. v
+          end
         elseif flags[y] and flags[y][x] then
-          char = '🚩'
-        end
-        
-        if cursor.x == x and cursor.y == y then
-          char = '[' .. char:sub(1, 2):gsub("%s+", "") .. ']'
-          if #char == 3 then char = char .. " " end
+          glyph, group = '🚩', 'GamifySaperFlag'
         else
-          char = ' ' .. char .. ' '
+          glyph, group = '■', 'GamifySaperHidden'
         end
-        line = line .. char
+
+        -- cursor wins the color slot
+        if cursor.x == x and cursor.y == y then
+          group = 'GamifySaperCursor'
+        end
+        marks[#marks + 1] = { #lines, #line, #line + #glyph, group }
+        line = line .. glyph .. ' '
       end
       table.insert(lines, line)
-      table.insert(lines, "")
     end
+
     vim.api.nvim_buf_set_option(buf, 'modifiable', true)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
     vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+
+    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+    for _, m in ipairs(marks) do
+      vim.api.nvim_buf_add_highlight(buf, ns, m[4], m[1], m[2], m[3])
+    end
   end
 
   local function reveal(x, y)
-    if x < 1 or x > width or y < 1 or y > height or (revealed[y] and revealed[y][x]) or (flags[y] and flags[y][x]) then return end
+    if x < 1 or x > width or y < 1 or y > height or (revealed[y] and revealed[y][x]) or (flags[y] and flags[y][x]) then
+      return
+    end
     revealed[y] = revealed[y] or {}
     revealed[y][x] = true
 
@@ -248,7 +312,9 @@ function M.start_minesweeper()
 
     if board[y][x] == 0 then
       for dy = -1, 1 do
-        for dx = -1, 1 do reveal(x + dx, y + dy) end
+        for dx = -1, 1 do
+          reveal(x + dx, y + dy)
+        end
       end
     end
   end
@@ -257,7 +323,9 @@ function M.start_minesweeper()
     local revealed_count = 0
     for y = 1, height do
       for x = 1, width do
-        if revealed[y] and revealed[y][x] then revealed_count = revealed_count + 1 end
+        if revealed[y] and revealed[y][x] then
+          revealed_count = revealed_count + 1
+        end
       end
     end
     if revealed_count == (width * height - mine_count) then
@@ -265,17 +333,17 @@ function M.start_minesweeper()
       logic.add_xp(200)
 
       -- Update best time
-      local storage = require('gamify.storage')
+      local storage = require 'gamify.storage'
       local data = storage.load_data()
       if not data.high_scores.saper or time_taken < data.high_scores.saper then
         data.high_scores.saper = time_taken
         storage.save_data(data)
         vim.schedule(function()
-          require('gamify.ui').show_popup("New Best Time: " .. time_taken .. "s! 🏆", "Saper Record", "top_right")
+          require('gamify.ui').show_popup('New Best Time: ' .. time_taken .. 's! 🏆', 'Saper Record', 'top_right')
         end)
       end
 
-      require('gamify.ui').show_popup("You Won Saper! +200 XP 🏆", "Victory", "top_right")
+      require('gamify.ui').show_popup('You Won Saper! +200 XP 🏆', 'Victory', 'top_right')
       require('gamify.ui').show_falling_confetti(30, 2000)
       vim.api.nvim_win_close(win, true)
       require('gamify.ui').show_status_window(require('gamify.achievements').get_achievements_table_length())
@@ -283,16 +351,20 @@ function M.start_minesweeper()
   end
 
   local function handle_reveal()
-    if game_over then return end
+    if game_over then
+      return
+    end
     if first_click then
       init_board(cursor.x, cursor.y)
       first_click = false
     end
     reveal(cursor.x, cursor.y)
     if game_over then
-      vim.api.nvim_err_writeln("BOOM! Game Over.")
+      vim.api.nvim_err_writeln 'BOOM! Game Over.'
       vim.defer_fn(function()
-        if vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_win_close(win, true)
+        end
         require('gamify.ui').show_status_window(require('gamify.achievements').get_achievements_table_length())
       end, 2000)
     else
@@ -302,16 +374,30 @@ function M.start_minesweeper()
   end
 
   local function toggle_flag()
-    if revealed[cursor.y] and revealed[cursor.y][cursor.x] then return end
+    if revealed[cursor.y] and revealed[cursor.y][cursor.x] then
+      return
+    end
     flags[cursor.y] = flags[cursor.y] or {}
     flags[cursor.y][cursor.x] = not flags[cursor.y][cursor.x]
     draw()
   end
 
-  vim.keymap.set('n', 'h', function() cursor.x = math.max(1, cursor.x - 1); draw() end, { buffer = buf })
-  vim.keymap.set('n', 'l', function() cursor.x = math.min(width, cursor.x + 1); draw() end, { buffer = buf })
-  vim.keymap.set('n', 'k', function() cursor.y = math.max(1, cursor.y - 1); draw() end, { buffer = buf })
-  vim.keymap.set('n', 'j', function() cursor.y = math.min(height, cursor.y + 1); draw() end, { buffer = buf })
+  vim.keymap.set('n', 'h', function()
+    cursor.x = math.max(1, cursor.x - 1)
+    draw()
+  end, { buffer = buf })
+  vim.keymap.set('n', 'l', function()
+    cursor.x = math.min(width, cursor.x + 1)
+    draw()
+  end, { buffer = buf })
+  vim.keymap.set('n', 'k', function()
+    cursor.y = math.max(1, cursor.y - 1)
+    draw()
+  end, { buffer = buf })
+  vim.keymap.set('n', 'j', function()
+    cursor.y = math.min(height, cursor.y + 1)
+    draw()
+  end, { buffer = buf })
   vim.keymap.set('n', '<CR>', handle_reveal, { buffer = buf })
   vim.keymap.set('n', 'f', toggle_flag, { buffer = buf })
   vim.keymap.set('n', '<Esc>', function()
@@ -347,17 +433,21 @@ function M.start_sudoku()
   local grid = {}
   local initial = {}
   local cursor = { x = 0, y = 0 }
-  local difficulty = "Medium"
+  local difficulty = 'Medium'
   local start_time = os.time()
 
   local function is_valid(g, r, c, val)
     for i = 0, 8 do
-      if g[r][i] == val or g[i][c] == val then return false end
+      if g[r][i] == val or g[i][c] == val then
+        return false
+      end
     end
     local br, bc = math.floor(r / 3) * 3, math.floor(c / 3) * 3
     for i = 0, 2 do
       for j = 0, 2 do
-        if g[br + i][bc + j] == val then return false end
+        if g[br + i][bc + j] == val then
+          return false
+        end
       end
     end
     return true
@@ -367,7 +457,7 @@ function M.start_sudoku()
     for r = 0, 8 do
       for c = 0, 8 do
         if g[r][c] == 0 then
-          local nums = {1,2,3,4,5,6,7,8,9}
+          local nums = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }
           for i = #nums, 2, -1 do
             local j = math.random(i)
             nums[i], nums[j] = nums[j], nums[i]
@@ -375,7 +465,9 @@ function M.start_sudoku()
           for _, val in ipairs(nums) do
             if is_valid(g, r, c, val) then
               g[r][c] = val
-              if solve(g) then return true end
+              if solve(g) then
+                return true
+              end
               g[r][c] = 0
             end
           end
@@ -388,9 +480,14 @@ function M.start_sudoku()
 
   local function generate()
     grid = {}
-    for i = 0, 8 do grid[i] = {}; for j = 0, 8 do grid[i][j] = 0 end end
+    for i = 0, 8 do
+      grid[i] = {}
+      for j = 0, 8 do
+        grid[i][j] = 0
+      end
+    end
     solve(grid)
-    local clues = difficulty == "Easy" and 45 or (difficulty == "Hard" and 25 or 35)
+    local clues = difficulty == 'Easy' and 45 or (difficulty == 'Hard' and 25 or 35)
     local removed = 0
     while removed < (81 - clues) do
       local r, c = math.random(0, 8), math.random(0, 8)
@@ -402,29 +499,33 @@ function M.start_sudoku()
     initial = {}
     for r = 0, 8 do
       initial[r] = {}
-      for c = 0, 8 do initial[r][c] = grid[r][c] ~= 0 end
+      for c = 0, 8 do
+        initial[r][c] = grid[r][c] ~= 0
+      end
     end
   end
 
   local function draw()
-    local lines = { "", ui.center_text("Difficulty: " .. difficulty .. " (Press d to change)", width), "" }
+    local lines = { '', ui.center_text('Difficulty: ' .. difficulty .. ' (Press d to change)', width), '' }
     for r = 0, 8 do
-      local line = "      "
-      if r > 0 and r % 3 == 0 then 
-        table.insert(lines, "      " .. string.rep("—", 37))
-        table.insert(lines, "")
+      local line = '      '
+      if r > 0 and r % 3 == 0 then
+        table.insert(lines, '      ' .. string.rep('—', 37))
+        table.insert(lines, '')
       end
       for c = 0, 8 do
-        if c > 0 and c % 3 == 0 then line = line .. "| " end
-        local val = grid[r][c] == 0 and "." or tostring(grid[r][c])
+        if c > 0 and c % 3 == 0 then
+          line = line .. '| '
+        end
+        local val = grid[r][c] == 0 and '.' or tostring(grid[r][c])
         if cursor.x == c and cursor.y == r then
-          line = line .. "[" .. val .. "] "
+          line = line .. '[' .. val .. '] '
         else
-          line = line .. " " .. val .. "  "
+          line = line .. ' ' .. val .. '  '
         end
       end
       table.insert(lines, line)
-      table.insert(lines, "")
+      table.insert(lines, '')
     end
     vim.api.nvim_buf_set_option(buf, 'modifiable', true)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
@@ -434,7 +535,9 @@ function M.start_sudoku()
   local function check_win()
     for r = 0, 8 do
       for c = 0, 8 do
-        if grid[r][c] == 0 then return end
+        if grid[r][c] == 0 then
+          return
+        end
         local v = grid[r][c]
         grid[r][c] = 0
         if not is_valid(grid, r, c, v) then
@@ -445,21 +548,21 @@ function M.start_sudoku()
       end
     end
     local time_taken = os.difftime(os.time(), start_time)
-    local xp = difficulty == "Easy" and 100 or (difficulty == "Hard" and 500 or 250)
+    local xp = difficulty == 'Easy' and 100 or (difficulty == 'Hard' and 500 or 250)
     logic.add_xp(xp)
 
     -- Update best time
-    local storage = require('gamify.storage')
+    local storage = require 'gamify.storage'
     local data = storage.load_data()
     if not data.high_scores.sudoku or time_taken < data.high_scores.sudoku then
       data.high_scores.sudoku = time_taken
       storage.save_data(data)
       vim.schedule(function()
-        require('gamify.ui').show_popup("New Best Time: " .. time_taken .. "s! 🏆", "Sudoku Record", "top_right")
+        require('gamify.ui').show_popup('New Best Time: ' .. time_taken .. 's! 🏆', 'Sudoku Record', 'top_right')
       end)
     end
 
-    require('gamify.ui').show_popup("Sudoku Solved! +" .. xp .. " XP 🏆", "Victory", "top_right")
+    require('gamify.ui').show_popup('Sudoku Solved! +' .. xp .. ' XP 🏆', 'Victory', 'top_right')
     require('gamify.ui').show_falling_confetti(30, 2000)
     vim.api.nvim_win_close(win, true)
     require('gamify.ui').show_status_window(require('gamify.achievements').get_achievements_table_length())
@@ -467,27 +570,55 @@ function M.start_sudoku()
 
   generate()
 
-  vim.keymap.set('n', 'h', function() cursor.x = (cursor.x - 1 + 9) % 9; draw() end, { buffer = buf })
-  vim.keymap.set('n', 'l', function() cursor.x = (cursor.x + 1) % 9; draw() end, { buffer = buf })
-  vim.keymap.set('n', 'k', function() cursor.y = (cursor.y - 1 + 9) % 9; draw() end, { buffer = buf })
-  vim.keymap.set('n', 'j', function() cursor.y = (cursor.y + 1) % 9; draw() end, { buffer = buf })
+  vim.keymap.set('n', 'h', function()
+    cursor.x = (cursor.x - 1 + 9) % 9
+    draw()
+  end, { buffer = buf })
+  vim.keymap.set('n', 'l', function()
+    cursor.x = (cursor.x + 1) % 9
+    draw()
+  end, { buffer = buf })
+  vim.keymap.set('n', 'k', function()
+    cursor.y = (cursor.y - 1 + 9) % 9
+    draw()
+  end, { buffer = buf })
+  vim.keymap.set('n', 'j', function()
+    cursor.y = (cursor.y + 1) % 9
+    draw()
+  end, { buffer = buf })
   vim.keymap.set('n', 'd', function()
-    if difficulty == "Easy" then difficulty = "Medium"
-    elseif difficulty == "Medium" then difficulty = "Hard"
-    else difficulty = "Easy" end
-    generate(); draw()
+    if difficulty == 'Easy' then
+      difficulty = 'Medium'
+    elseif difficulty == 'Medium' then
+      difficulty = 'Hard'
+    else
+      difficulty = 'Easy'
+    end
+    generate()
+    draw()
   end, { buffer = buf })
 
   for i = 1, 9 do
     vim.keymap.set('n', tostring(i), function()
       if not initial[cursor.y][cursor.x] then
         grid[cursor.y][cursor.x] = i
-        draw(); check_win()
+        draw()
+        check_win()
       end
     end, { buffer = buf })
   end
-  vim.keymap.set('n', '0', function() if not initial[cursor.y][cursor.x] then grid[cursor.y][cursor.x] = 0; draw() end end, { buffer = buf })
-  vim.keymap.set('n', 'x', function() if not initial[cursor.y][cursor.x] then grid[cursor.y][cursor.x] = 0; draw() end end, { buffer = buf })
+  vim.keymap.set('n', '0', function()
+    if not initial[cursor.y][cursor.x] then
+      grid[cursor.y][cursor.x] = 0
+      draw()
+    end
+  end, { buffer = buf })
+  vim.keymap.set('n', 'x', function()
+    if not initial[cursor.y][cursor.x] then
+      grid[cursor.y][cursor.x] = 0
+      draw()
+    end
+  end, { buffer = buf })
 
   vim.keymap.set('n', '<Esc>', function()
     vim.api.nvim_win_close(win, true)

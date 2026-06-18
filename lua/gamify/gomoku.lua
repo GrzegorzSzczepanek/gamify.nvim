@@ -4,9 +4,18 @@ local SIZE = 20
 local WIN_LEN = 5
 local XP_WIN = 150
 
-local CELL_EMPTY = '.'
+-- Logical board values (kept ASCII so win-detection & network protocol are simple).
 local CELL_X = 'X'
 local CELL_O = 'O'
+
+-- Display glyphs. These are multi-byte, so cell columns are computed from the
+-- rendered byte offsets (see draw()) rather than assuming 1 byte per cell.
+-- All three glyphs are 3 bytes wide so column byte offsets stay uniform.
+local GLYPH_EMPTY = '◦'
+local GLYPH_X = '●'
+local GLYPH_O = '○'
+local GLYPH_BYTES = #GLYPH_EMPTY
+local SEP = ' ' -- single ASCII space between cells
 
 local function new_board()
   local b = {}
@@ -85,12 +94,22 @@ local function open_session(opts)
 
   local ns = vim.api.nvim_create_namespace 'gamify_gomoku'
 
-  local BOARD_BASE_ROW = 3 -- 0-based buffer line where the board grid starts
-  local LEADING = 1 -- leading space before the first cell on each board line
+  local BOARD_BASE_ROW = 3 -- header occupies lines 0-2 (score, turn, blank)
+  local LEADING = '  '
 
-  -- Buffer position (0-based row, 0-based byte col) of a logical cell.
+  -- Glyphs are multi-byte, so precompute the byte offset of each column for
+  -- highlighting and cursor placement instead of assuming one byte per cell.
+  local cell_byte = {}
+  do
+    local off = #LEADING
+    for x = 1, SIZE do
+      cell_byte[x] = off
+      off = off + GLYPH_BYTES + #SEP
+    end
+  end
+
   local function cell_pos(x, y)
-    return BOARD_BASE_ROW + (y - 1), LEADING + (x - 1) * 2
+    return BOARD_BASE_ROW + (y - 1), cell_byte[x]
   end
 
   local function in_win_cells(x, y)
@@ -118,7 +137,7 @@ local function open_session(opts)
     else
       turn_line = current .. "'s turn"
     end
-    table.insert(lines, string.format('  X: %d   O: %d', scores.X, scores.O))
+    table.insert(lines, string.format('  %s  %d    %s  %d', GLYPH_X, scores.X, GLYPH_O, scores.O))
     table.insert(lines, '  ' .. turn_line)
     table.insert(lines, '')
 
@@ -126,9 +145,15 @@ local function open_session(opts)
       local cells = {}
       for x = 1, SIZE do
         local v = board[y][x]
-        table.insert(cells, v or CELL_EMPTY)
+        local g = GLYPH_EMPTY
+        if v == CELL_X then
+          g = GLYPH_X
+        elseif v == CELL_O then
+          g = GLYPH_O
+        end
+        table.insert(cells, g)
       end
-      table.insert(lines, ' ' .. table.concat(cells, ' '))
+      table.insert(lines, LEADING .. table.concat(cells, SEP))
     end
     table.insert(lines, '')
 
@@ -137,11 +162,12 @@ local function open_session(opts)
     vim.api.nvim_buf_set_option(buf, 'modifiable', false)
 
     vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+    vim.api.nvim_buf_add_highlight(buf, ns, 'GamifyGomokuX', 0, 2, 2 + GLYPH_BYTES)
     for y = 1, SIZE do
       for x = 1, SIZE do
         local v = board[y][x]
         local row, col = cell_pos(x, y)
-        local hl
+        local hl = 'GamifyGomokuDot'
         if in_win_cells(x, y) then
           hl = 'GamifyGomokuWin'
         elseif v == CELL_X then
@@ -149,9 +175,7 @@ local function open_session(opts)
         elseif v == CELL_O then
           hl = 'GamifyGomokuO'
         end
-        if hl then
-          vim.api.nvim_buf_add_highlight(buf, ns, hl, row, col, col + 1)
-        end
+        vim.api.nvim_buf_add_highlight(buf, ns, hl, row, col, col + GLYPH_BYTES)
       end
     end
 
@@ -159,7 +183,7 @@ local function open_session(opts)
     -- blinking cursor and the highlight always agree (never lands in a gap).
     if not finished then
       local row, col = cell_pos(cursor.x, cursor.y)
-      vim.api.nvim_buf_add_highlight(buf, ns, 'GamifyGomokuCursor', row, col, col + 1)
+      vim.api.nvim_buf_add_highlight(buf, ns, 'GamifyGomokuCursor', row, col, col + GLYPH_BYTES)
       if vim.api.nvim_win_is_valid(win) then
         vim.api.nvim_win_set_cursor(win, { row + 1, col })
       end
@@ -244,14 +268,30 @@ local function open_session(opts)
     draw()
   end
 
-  vim.keymap.set('n', 'h', function() move_cursor(-1, 0) end, { buffer = buf })
-  vim.keymap.set('n', 'l', function() move_cursor(1, 0) end, { buffer = buf })
-  vim.keymap.set('n', 'k', function() move_cursor(0, -1) end, { buffer = buf })
-  vim.keymap.set('n', 'j', function() move_cursor(0, 1) end, { buffer = buf })
-  vim.keymap.set('n', '<Left>', function() move_cursor(-1, 0) end, { buffer = buf })
-  vim.keymap.set('n', '<Right>', function() move_cursor(1, 0) end, { buffer = buf })
-  vim.keymap.set('n', '<Up>', function() move_cursor(0, -1) end, { buffer = buf })
-  vim.keymap.set('n', '<Down>', function() move_cursor(0, 1) end, { buffer = buf })
+  vim.keymap.set('n', 'h', function()
+    move_cursor(-1, 0)
+  end, { buffer = buf })
+  vim.keymap.set('n', 'l', function()
+    move_cursor(1, 0)
+  end, { buffer = buf })
+  vim.keymap.set('n', 'k', function()
+    move_cursor(0, -1)
+  end, { buffer = buf })
+  vim.keymap.set('n', 'j', function()
+    move_cursor(0, 1)
+  end, { buffer = buf })
+  vim.keymap.set('n', '<Left>', function()
+    move_cursor(-1, 0)
+  end, { buffer = buf })
+  vim.keymap.set('n', '<Right>', function()
+    move_cursor(1, 0)
+  end, { buffer = buf })
+  vim.keymap.set('n', '<Up>', function()
+    move_cursor(0, -1)
+  end, { buffer = buf })
+  vim.keymap.set('n', '<Down>', function()
+    move_cursor(0, 1)
+  end, { buffer = buf })
   vim.keymap.set('n', '<CR>', try_place_here, { buffer = buf })
   vim.keymap.set('n', '<Space>', try_place_here, { buffer = buf })
 
@@ -282,7 +322,8 @@ local function open_session(opts)
   vim.cmd [[
     highlight default GamifyGomokuX      gui=bold guifg=#F38BA8
     highlight default GamifyGomokuO      gui=bold guifg=#89B4FA
-    highlight default GamifyGomokuWin    gui=bold guifg=#000000 guibg=#A6E3A1
+    highlight default GamifyGomokuDot    guifg=#45475A
+    highlight default GamifyGomokuWin    gui=bold guifg=#1E1E2E guibg=#A6E3A1
     highlight default GamifyGomokuCursor gui=bold guifg=#1E1E2E guibg=#F9E2AF
   ]]
 
@@ -330,7 +371,11 @@ function M.host(port)
     server:bind('0.0.0.0', port)
   end)
   if not ok then
-    vim.notify('Gomoku host failed to bind port ' .. port .. ': ' .. tostring(err), vim.log.levels.ERROR, { title = 'Gamify' })
+    vim.notify(
+      'Gomoku host failed to bind port ' .. port .. ': ' .. tostring(err),
+      vim.log.levels.ERROR,
+      { title = 'Gamify' }
+    )
     return
   end
 
@@ -353,7 +398,7 @@ function M.host(port)
     server:accept(sock)
     client_sock = sock
     -- host is X
-    sock:write('SYM O\n') -- tell client they are O
+    sock:write 'SYM O\n' -- tell client they are O
     vim.schedule(function()
       session = open_session {
         title = ' ⬛ Gomoku — LAN host (X) ',
@@ -362,8 +407,12 @@ function M.host(port)
           send(string.format('MOVE %d,%d,%s', x, y, p))
         end,
         on_close = function()
-          if sock and not sock:is_closing() then sock:close() end
-          if not server:is_closing() then server:close() end
+          if sock and not sock:is_closing() then
+            sock:close()
+          end
+          if not server:is_closing() then
+            server:close()
+          end
         end,
       }
       local feed = make_reader(function(line)
@@ -395,7 +444,11 @@ function M.join(host, port)
   sock:connect(host, port, function(err)
     if err then
       vim.schedule(function()
-        vim.notify('Gomoku: could not connect to ' .. host .. ':' .. port .. ' (' .. tostring(err) .. ')', vim.log.levels.ERROR, { title = 'Gamify' })
+        vim.notify(
+          'Gomoku: could not connect to ' .. host .. ':' .. port .. ' (' .. tostring(err) .. ')',
+          vim.log.levels.ERROR,
+          { title = 'Gamify' }
+        )
       end)
       return
     end
@@ -418,7 +471,9 @@ function M.join(host, port)
               send(string.format('MOVE %d,%d,%s', x, y, p))
             end,
             on_close = function()
-              if not sock:is_closing() then sock:close() end
+              if not sock:is_closing() then
+                sock:close()
+              end
             end,
           }
         end)
