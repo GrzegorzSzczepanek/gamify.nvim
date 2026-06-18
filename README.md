@@ -40,18 +40,17 @@ Level, XP bar, role, prestige, focus combo, progress to your next achievement, d
 <img width="1700" height="1013" alt="image" src="https://github.com/user-attachments/assets/2ee9536d-0c8e-4eb1-88f1-8248df3b1132" />
 
 
+### Screenshots
+<img width="2028" height="1594" alt="image" src="https://github.com/user-attachments/assets/a1505784-f629-40cd-9bf4-1af510c990bb" />
+
 ### Activity Heatmap
 A GitHub-style contribution graph of your coding, via `:GamifyHeatmap`.
-<img width="2464" height="1602" alt="image" src="https://github.com/user-attachments/assets/df1bfde4-783c-4134-bee4-499d3de9da24" />
+<img width="524" height="379" alt="image" src="https://github.com/user-attachments/assets/c7a2c797-069f-48e6-9b49-8a28edc2ba5e" />
 
 
 ### Share Card
 A shareable ASCII character card you can yank to your clipboard, via `:GamifyShare`.
 <img width="436" height="322" alt="image" src="https://github.com/user-attachments/assets/1373860f-9e7f-4eda-b5f8-8537b8bdb1e1" />
-
-
-### Screenshots
-<img width="2028" height="1594" alt="image" src="https://github.com/user-attachments/assets/a1505784-f629-40cd-9bf4-1af510c990bb" />
 
 
 ### Gamify Katas
@@ -67,10 +66,8 @@ The 20×20 board in action — local hot-seat or LAN multiplayer (`:Gomoku`).
 
 ### Avatar Companion
 Build your own character with `:GamifyAvatar` and let it sit in the corner with cute idle animations (blink, bounce, wave).
-<!-- TODO: screenshot of the avatar generator -->
-<!-- ![Avatar generator](docs/screenshots/avatar-generator.png) -->
-<!-- TODO: screenshot of the corner companion -->
-<!-- ![Avatar companion](docs/screenshots/avatar-companion.png) -->
+<img width="450" height="400" alt="image" src="https://github.com/user-attachments/assets/295530ed-a626-4b3b-9723-9849767d38bf" />
+<img width="264" height="358" alt="Screen Recording 2026-06-18 at 15 04 52" src="https://github.com/user-attachments/assets/22365663-19c2-4942-bc5d-ca380fc40b73" />
 
 
 ---
